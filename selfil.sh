@@ -2,11 +2,21 @@
 
 function slct () {
 
+ local F
+
+ # séparation multilignes
+ while [ -n "$1" ] ; do
+  [ -n "$F" ] && F="$F
+"
+  F="$F$1"
+  shift
+ done
+
  # sortie temporaire
  tf=$(mktemp)
 
  # présenter, demander le choix
- echo "$@" | busybox awk -v answer="$tf" '
+ echo "$F" | busybox awk -v answer="$tf" '
  function read_console() {
   "head -1 < /dev/tty" | getline results
   close("head -1 < /dev/tty")
