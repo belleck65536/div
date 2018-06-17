@@ -35,7 +35,7 @@ function slct () {
 		if (selection != "q") print A[selection] > answer
 	} '
 
-	#afficher le choix
+	# afficher le choix
 	cat "$tf"
 
 	# nettoyer
