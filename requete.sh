@@ -2,6 +2,9 @@
 # permet la creation d'une requete de certificat puis signe le certificat
 #
 # WORKDIR NOMFIC REQCFG MODREQ
+# "${1:-/dev/stdin}" --> prend $1 si stdin est vide
+
+. ./select.sh
 
 WORKDIR=certs/
 
@@ -14,116 +17,50 @@ while [ "$NOMFIC" = "" ]; do
 done
 
 
-echo "type de clef :
-1. Courbe eliptique
-2. Paire RSA"
-while [ -z "$KEYTYPE" ]; do
-	read KEYTYPEi
-	case $KEYTYPEi in
-		1)
-			KEYTYPE="ecparam -genkey -noout -name"
-			echo "courbe :
-			1. secp521r1
-			2. secp384r1
-			3. prime256v1"
-			while [ -z $KEYOPT ]; do
-				read KEYOPTi
-				case $KEYOPTi in
-					1)
-						KEYOPT="secp521r1"
-					;;
-					2)
-						KEYOPT="secp384r1"
-					;;
-					3)
-						KEYOPT="prime256v1"
-					;;
-					"")
-						echo "???"
-					;;
-					*)
-						echo "Choix incorrect"
-					;;
-				esac
-			done
-		;;
-		2)
-			KEYTYPE="genrsa"
-			echo "longueur :"
-			while [ -z $KEYOPT ]; do
-				read KEYOPTi
-				case $KEYOPTi in
-					1024|2048|4096|8192)
-						KEYOPT=$KEYOPTi
-					;;
-					"")
-						echo "???"
-					;;
-					*)
-						echo "Choix incorrect"
-					;;
-				esac
-			done
-		;;
-		"")
-			echo "???"
-		;;
-		*)
-			echo "Choix incorrect"
-		;;
-	esac
-done
+ec="Courbe eliptique"
+rsa="Paire RSA"
+
+echo "Type de clef ?"
+clef=$( slct $ec $rsa )
+
+if [ "$clef" -eq "$ec" ] ; then
+	echo "Type de courbe :"
+	keyargs="ecparam -genkey -noout -name $( slct secp521r1 secp384r1 prime256v1 )"
+fi
+
+if [ "$clef" -eq "$rsa" ] ; then
+	echo "Longueur de clef :"
+	keyopt="genrsa $( slct 1024 2048 4096 8192 )"
+fi
 
 
 echo "Modèle de requête :
-1. Serveur SSL
-2. Client SSL
-3. Certificat pour signature de code
-4. Certificat d'identité numérique (e-mail)"
-while [ -z $REQCFG ]; do
-	read MODREQ
-	case $MODREQ in
-		1)
-			REQCFG=server
-		;;
-		2)
-			REQCFG=client
-		;;
-		3)
-			REQCFG=codesign
-		;;
-		4)
-			REQCFG=email
-		;;
-		"")
-			echo "???"
-		;;
-		*)
-			echo "Choix incorrect"
-		;;
-	esac
-done
+cfg_file=$( slct $( ls ./etc/req*.conf ) )
 
+# recherche des extensions disponibles
+ext="$( slct $( grep -e "\[.*_ext\s*\]" "$cfg_file" | sed -r 's/\[\s*//g' | sed -r 's/_ext\s*\]//g' | tr '\n' ' ') )_ext"
 
-echo "Définition du SAN
-élements : DNS | IP | URI | email | RID | dirName | otherNmae
-ex : DNS:www.example.com,IP:0.0.0.0
-le syubjectAtlName ne peut être vide"
-while [ -z "$SANC" ]; do
-	read SANC
-	case $SANC in
-		"")
-			echo "???"
-		;;
-		*)
-			echo "Appuyez sur une touche pour continuer"
-			read dummy
-		;;
-	esac
-done
+if [ "${ext//san/}" != "$ext" ] ; then
+	# contient "san", donc il faut afficher l'édition du SAN
+	echo "Définition du SAN
+	élements : DNS | IP | URI | email | RID | dirName | otherNmae
+	ex : DNS:www.example.com,IP:0.0.0.0"
+	while [ -z "$SANC" ]; do
+		read SANC
+		case $SANC in
+			"")
+				echo "???"
+			;;
+			*)
+				echo "Appuyez sur une touche pour continuer"
+				read dummy
+			;;
+		esac
+	done
+fi
 
 	
-openssl $KEYTYPE $KEYOPT -out "$WORKDIR$NOMFIC.key"
+openssl $keyargs -out "$WORKDIR$NOMFIC.key"
 SAN=$SANC openssl req -new -config etc/nc-$REQCFG.conf -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
 ./signat.sh $REQCFG "$WORKDIR$NOMFIC.csr"
 
