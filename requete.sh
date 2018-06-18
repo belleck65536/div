@@ -48,19 +48,13 @@ if [ "${ext//san/}" != "$ext" ] ; then
 	while [ -z "$SANC" ]; do
 		read SANC
 		case $SANC in
-			"")
-				echo "???"
-			;;
-			*)
-				echo "Appuyez sur une touche pour continuer"
-				read dummy
-			;;
+			"") echo "???" ;;
+			*) read -p "Appuyez sur une touche pour continuer" dummy ;;
 		esac
 	done
 fi
 
 	
 openssl $keyargs -out "$WORKDIR$NOMFIC.key"
-SAN=$SANC openssl req -new -config etc/nc-$REQCFG.conf -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
-./signat.sh $REQCFG "$WORKDIR$NOMFIC.csr"
-
+# SAN=$SANC openssl req -new -config "etc/$cfg_file" -reqexts $ext -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
+# ./signat.sh $REQCFG "$WORKDIR$NOMFIC.csr"
