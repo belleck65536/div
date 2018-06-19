@@ -54,6 +54,8 @@ if [ $(echo "$EXT" | grep -ic "san" ) -ge 1 ] ; then
 				;;
 		esac
 	done
+else
+	SANC="SAN=#"
 fi
 	
 openssl $KEYARGS -out "$WORKDIR$NOMFIC.key"
