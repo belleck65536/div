@@ -3,7 +3,7 @@
 function slct () {
 	local i r c
 
-	for A in $@ ; do
+	for A in "$@" ; do
 		# contruction de l'index i
 		let i+=1
 
