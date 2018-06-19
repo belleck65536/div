@@ -21,7 +21,7 @@ ec="Courbe eliptique"
 rsa="Paire RSA"
 
 echo "Type de clef ?"
-clef=$( slct $ec $rsa )
+clef=$( slct "$ec" "$rsa" )
 
 if [ "$clef" -eq "$ec" ] ; then
 	echo "Type de courbe :"
