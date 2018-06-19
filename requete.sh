@@ -7,6 +7,8 @@
 . ./select.sh
 
 WORKDIR=certs/
+ec="Courbe eliptique"
+rsa="Paire RSA"
 
 while [ "$NOMFIC" = "" ]; do
 	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " NOMFIC
@@ -16,45 +18,46 @@ while [ "$NOMFIC" = "" ]; do
 	fi;
 done
 
-
-ec="Courbe eliptique"
-rsa="Paire RSA"
-
 echo "Type de clef ?"
 clef=$( slct "$ec" "$rsa" )
 
-if [ "$clef" -eq "$ec" ] ; then
-	echo "Type de courbe :"
-	keyargs="ecparam -genkey -noout -name $( slct secp521r1 secp384r1 prime256v1 )"
-fi
+case "$clef" in 
+	"$ec")
+		echo "Type de courbe :"
+		keyargs=$( slct secp521r1 secp384r1 prime256v1 )
+		[ -n "$keyargs" ] && keyargs="ecparam -genkey -noout -name $keyargs" || exit
+	;;
+	"$rsa")
+		echo "Longueur de clef :"
+		keyargs=$( slct 1024 2048 4096 8192 )
+		[ -n "$keyargs" ] && keyargs="genrsa $keyargs" || exit
+	;;
+	*) exit ;;
+esac
 
-if [ "$clef" -eq "$rsa" ] ; then
-	echo "Longueur de clef :"
-	keyopt="genrsa $( slct 1024 2048 4096 8192 )"
-fi
-
-
-echo "Modèle de requête :
+echo "Modèle de requête :"
 cfg_file=$( slct $( ls ./etc/req*.conf ) )
 
 # recherche des extensions disponibles
 ext="$( slct $( grep -e "\[.*_ext\s*\]" "$cfg_file" | sed -r 's/\[\s*//g' | sed -r 's/_ext\s*\]//g' | tr '\n' ' ') )_ext"
+[ -z "$ext" ] && exit
 
-if [ "${ext//san/}" != "$ext" ] ; then
-	# contient "san", donc il faut afficher l'édition du SAN
-	echo "Définition du SAN
-	élements : DNS | IP | URI | email | RID | dirName | otherNmae
-	ex : DNS:www.example.com,IP:0.0.0.0"
+# ajout d'subjectAltName suivant l'extension demandée
+if [ $(echo "$ext" | grep -ic "san" ) -ge 1 ] ; then
+	printf "%s\n" "Définition du SAN suivant la forme <type>:<valeur>,<type>:<valeur>,..."
+	printf "%s\n" "éléments :\n\tDNS\n\tIP\n\tURI\n\temail\n\tRID\n\tdirName\n\totherName"
+	printf "%s\n" "ex : DNS:www.example.com,IP:0.0.0.0"
 	while [ -z "$SANC" ]; do
 		read SANC
 		case $SANC in
 			"") echo "???" ;;
-			*) read -p "Appuyez sur une touche pour continuer" dummy ;;
+			*)	read -p "Appuyez sur une touche pour continuer" d
+				SANC="SAN=$SANC"
+				;;
 		esac
 	done
 fi
-
 	
 openssl $keyargs -out "$WORKDIR$NOMFIC.key"
-# SAN=$SANC openssl req -new -config "etc/$cfg_file" -reqexts $ext -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
+$SANC openssl req -new -config "etc/$cfg_file" -reqexts $ext -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
 # ./signat.sh $REQCFG "$WORKDIR$NOMFIC.csr"
