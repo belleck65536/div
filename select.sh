@@ -2,6 +2,7 @@
 
 function slct () {
 	local m i r c
+	[ $# -lt 1 ] && return
 
 	for A in "$@" ; do
 		# contruction de l'index i
