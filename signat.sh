@@ -1,8 +1,11 @@
 #!/bin/sh
 #
-# -c "config_file" -e "extension" -i "req_file"
+# signat.sh -c "config_file" -e "extension" -i "req_file"
 
 . ./select.sh
+
+CSRDIR=req
+CFGDIR=etc
 
 function display_help () {
 	echo "Usage : $(basename $0) <configuration> <extensions> <requete>"
@@ -30,11 +33,18 @@ while getopts ":c:e:i:" opt; do
 done
 
 # validation i
-[ -z "$req_file" ] && # choisir req_file dans une liste excluant les csr ayant un crt, si liste vide, renvoyer un message d'erreur + sortie
-#[ -f "${req_file%.csr}.crt" ] && ## choisir à nouveau					( echo "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\"" ; exit 1 )
+# si pas d'argument fourni, on recherche une CSR
+[ -z "$req_file" ] && slct $( for csr in $CSRDIR/*.csr ; do [ ! -f "${csr%.csr}.crt" ] && echo "$csr" ; done  )
+# si on a toujours pas d'arguments, c'est qu'il n'y avait rien en entrée et que la sélection n'a rien donné (pas de résultat/tout est signé)
+[ -z "$req_file" ] && ( echo "aucune requête disponible pour être signée" ; exit 1 )
+# si le CRT asocié existe, on sort car cette vérif a été exécuté lors de la selection des requêtes.
+# ce test ne sert que pour l'utilsation avec arguments
+[ -f "${req_file%.csr}.crt" ] && ( echo "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\"" ; exit 1 )
 
 # validation c
-[ -z "$cfg_file" ] && # choisir config, si liste vide, sortir
+[ -z "$cfg_file" ] && slct $( ls *-ca/*.conf )
+# choisir config, si liste vide, sortir
+[ -z "$cfg_file" ] && ( echo "aucune configuration disponible pour signer la requête" ; exit 1 )
 
 # validation e
 [ -z "$exten" -o $( grep -ec "\s*\[\s*$2\s*\]\s*" ) -lt 1 ] && # choisir extensions dans config
