@@ -5,7 +5,7 @@
 . ./select.sh
 
 WORKDIR=certs/
-EC="Courbe eliptique"
+EC="Courbe elliptique"
 RSA="Paire RSA"
 
 while [ "$NOMFIC" = "" ]; do
