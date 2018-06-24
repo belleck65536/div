@@ -14,8 +14,22 @@ function display_help () {
 
 while getopts ":c:e:i:" opt; do
 	case $opt in
-		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || ( echo "erreur sur fichier de configuration \"$OPTARG\"" ; exit 1 ) ;;
-		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || ( echo "erreur sur fichier de requête \"$OPTARG\"" ; exit 1 ) ;;
+		c)
+			if [ -f "$OPTARG" ] ; then
+				cfg_file="$OPTARG"
+			else
+				echo "erreur sur fichier de configuration \"$OPTARG\""
+				exit 1
+			fi
+		;;
+		i)
+			if [ -f "$OPTARG" ] ; then
+				req_file="$OPTARG"
+			else
+				echo "erreur sur fichier de requête \"$OPTARG\""
+				exit 1
+			fi
+		;;
 		e) exten="$OPTARG" ;;
 		\?) echo "Invalid option: -$OPTARG" ; display_help ;;
 		:) echo "Option -$OPTARG requires an argument." ; display_help ;;
@@ -24,21 +38,32 @@ done
 
 # validation i
 # si pas d'argument fourni, on recherche une CSR
-[ -z "$req_file" ] && slct $( for csr in $CSRDIR/*.csr ; do [ ! -f "${csr%.csr}.crt" ] && echo "$csr" ; done  )
+if [ -z "$req_file" ] ; then
+	slct $( for csr in $CSRDIR/*.csr ; do [ ! -f "${csr%.csr}.crt" ] && echo "$csr" ; done  )
+fi
 # si on a toujours pas d'arguments, c'est qu'il n'y avait rien en entrée et que la sélection n'a rien donné (pas de résultat/tout est signé)
-[ -z "$req_file" ] && ( echo "aucune requête disponible pour être signée" ; exit 1 )
+if [ -z "$req_file" ] ; then
+	echo "aucune requête disponible pour être signée"
+	exit 1
+fi
 # si le CRT asocié existe, on sort car cette vérif a été exécuté lors de la selection des requêtes.
 # ce test ne sert que pour l'utilsation avec arguments
-[ -f "${req_file%.csr}.crt" ] && ( echo "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\"" ; exit 1 )
+if [ -f "${req_file%.csr}.crt" ] ; then
+	echo "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\""
+	exit 1
+fi
 
 # validation c
 [ -z "$cfg_file" ] && slct $( ls *-ca/*.conf )
 # choisir config, si liste vide, sortir
-[ -z "$cfg_file" ] && ( echo "aucune configuration disponible pour signer la requête" ; exit 1 )
+if [ -z "$cfg_file" ] ; then
+	echo "aucune configuration disponible pour signer la requête"
+	exit 1
+fi
 
 # validation e
-[ -z "$exten" -o $( grep -ec "\s*\[\s*$2\s*\]\s*" ) -lt 1 ] && # choisir extensions dans config
-si exten toujours vide, quitter sur anomalie extension dans config_file
+#[ -z "$exten" -o $( grep -ec "\s*\[\s*$2\s*\]\s*" ) -lt 1 ] && # choisir extensions dans config
+#si exten toujours vide, quitter sur anomalie extension dans config_file
 
 
 echo openssl ca -config "$cfg_file" -in "$req_file" -out "${req_file%.csr}.crt" -extensions "$exten" -notext
