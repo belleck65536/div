@@ -23,12 +23,12 @@ case "$CLEF" in
 	"$EC")
 		echo "Type de courbe :"
 		KEYARGS=$( slct secp521r1 secp384r1 prime256v1 )
-		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS" || exit
+		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS -out \"$WORKDIR$NOMFIC.key\"" || exit
 	;;
 	"$RSA")
 		echo "Longueur de clef :"
 		KEYARGS=$( slct 1024 2048 4096 8192 )
-		[ -n "$KEYARGS" ] && KEYARGS="genrsa $KEYARGS" || exit
+		[ -n "$KEYARGS" ] && KEYARGS="genrsa -out \"$WORKDIR$NOMFIC.key\" $KEYARGS" || exit
 	;;
 	*) exit ;;
 esac
@@ -58,6 +58,6 @@ else
 	SANC="SAN=#"
 fi
 	
-openssl $KEYARGS -out "$WORKDIR$NOMFIC.key"
+openssl $KEYARGS
 $SANC openssl req -new -config "$CFG_FILE" -reqexts $EXT -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
 # ./signat.sh $CFG_FILE "$WORKDIR$NOMFIC.csr"
