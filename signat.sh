@@ -14,21 +14,11 @@ function display_help () {
 
 while getopts ":c:e:i:" opt; do
 	case $opt in
-		c)
-			[ -f "$OPTARG" ] && cfg_file="$OPTARG" || ( echo "erreur sur fichier de configuration \"$OPTARG\"" ; exit 1 )
-		;;
-		e)
-			exten="$OPTARG"
-		;;
-		i)
-			[ -f "$OPTARG" ] && req_file="$OPTARG" || ( echo "erreur sur fichier de requête \"$OPTARG\"" ; exit 1 )
-		;;
-		\?)
-			echo "Invalid option: -$OPTARG" ; display_help
-		;;
-		:)
-			echo "Option -$OPTARG requires an argument." ; display_help
-		;;
+		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || ( echo "erreur sur fichier de configuration \"$OPTARG\"" ; exit 1 ) ;;
+		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || ( echo "erreur sur fichier de requête \"$OPTARG\"" ; exit 1 ) ;;
+		e) exten="$OPTARG" ;;
+		\?) echo "Invalid option: -$OPTARG" ; display_help ;;
+		:) echo "Option -$OPTARG requires an argument." ; display_help ;;
 	esac
 done
 
@@ -51,7 +41,7 @@ done
 si exten toujours vide, quitter sur anomalie extension dans config_file
 
 
-openssl ca -config "$cfg_file" -in "$req_file" -out "${req_file%.csr}.crt" -extensions "$exten" -notext
+echo openssl ca -config "$cfg_file" -in "$req_file" -out "${req_file%.csr}.crt" -extensions "$exten" -notext
 
 if [ -f "${req_file%.csr}.key" -a -f "${req_file%.csr}.crt" ]; then
 	read -p "Convertir le certificat signé en PKCS#12 ? [y/n] "
@@ -60,4 +50,4 @@ if [ -f "${req_file%.csr}.key" -a -f "${req_file%.csr}.crt" ]; then
 	[ "${REPLY::1}" = "y" ] && rm -f "${req_file%.csr}."*
 fi
 
-cp "${req_file%.csr}."* /home/cert/
+echo cp "${req_file%.csr}."* /home/cert/
