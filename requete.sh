@@ -23,12 +23,12 @@ case "$CLEF" in
 	"$EC")
 		echo "Type de courbe :"
 		KEYARGS=$( slct secp521r1 secp384r1 prime256v1 )
-		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS -out \"$WORKDIR$NOMFIC.key\"" || exit
+		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS" || exit
 	;;
 	"$RSA")
 		echo "Longueur de clef :"
 		KEYARGS=$( slct 1024 2048 4096 8192 )
-		[ -n "$KEYARGS" ] && KEYARGS="genrsa -out \"$WORKDIR$NOMFIC.key\" $KEYARGS" || exit
+		[ -n "$KEYARGS" ] && KEYARGS="genrsa $KEYARGS" || exit
 	;;
 	*) exit ;;
 esac
@@ -41,7 +41,8 @@ EXT="$( slct $( grep -e "\[.*_ext\s*\]" "$CFG_FILE" | sed -r 's/\[\s*//g' | sed 
 [ -z "$EXT" ] && exit
 
 # ajout d'subjectAltName suivant l'extension demandée
-if [ $(echo "$EXT" | grep -ic "san" ) -ge 1 ] ; then
+# si mention "san" absente, alors on demande le SAN (logique="without san")
+if [ $(echo "$EXT" | grep -ic "san" ) -eq 0 ] ; then
 	printf "%s\n" "Définition du SAN suivant la forme <type>:<valeur>,<type>:<valeur>,..."
 	printf "%s\n" "éléments :\n\tDNS\n\tIP\n\tURI\n\temail\n\tRID\n\tdirName\n\totherName"
 	printf "%s\n" "ex : DNS:www.example.com,IP:0.0.0.0"
@@ -50,14 +51,14 @@ if [ $(echo "$EXT" | grep -ic "san" ) -ge 1 ] ; then
 		case $SANC in
 			"") echo "???" ;;
 			*)	read -p "Appuyez sur une touche pour continuer" D
-				SANC="SAN=$SANC"
+				SANC="$SANC"
 				;;
 		esac
 	done
 else
-	SANC="SAN=#"
+	SANC="#"
 fi
 	
-openssl $KEYARGS
-$SANC openssl req -new -config "$CFG_FILE" -reqexts $EXT -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
+openssl $KEYARGS >> "$WORKDIR$NOMFIC.key"
+SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts $EXT -out "$WORKDIR$NOMFIC.csr" -key "$WORKDIR$NOMFIC.key"
 # ./signat.sh $CFG_FILE "$WORKDIR$NOMFIC.csr"
