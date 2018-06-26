@@ -1,22 +1,27 @@
 #!/bin/sh
 
+dir_ca=ca/
+dir_cfg=etc/
+dir_req=req/
+dir_certs=certs/
+dir_logs=logs/
+
 function slct () {
-	local m i r c
+	local i r c
 	[ $# -lt 1 ] && return
 
 	for A in "$@" ; do
 		let i+=1
-		m="$i"
 		eval local m$i=\"$A\"
 		printf "\t%2d. %s\n" "$i" "$A" >&2
 	done
 
 	while [ -z "$r" ] ; do
-		read -p "Enter selection ( 1 - $m ) or (q)uit: " c
+		read -p "Enter selection ( 1 - $i ) or (q)uit: " c
 		[ "$c" = "q" ] && break
 		[ "$c" -eq "$c" ] 2>/dev/null
 		[ $? -ne 0 ] && continue
-		[ $c -ge 1 -a $c -le $m ] && eval r="\$m$c"
+		[ "$c" -ge 1 -a "$c" -le $i ] && eval r="\$m$c"
 	done
 
 	printf "%s" "$r"
