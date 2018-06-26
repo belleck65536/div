@@ -2,7 +2,7 @@
 #
 # signat.sh -c "config_file" -e "extension" -i "req_file"
 
-. ./select.sh
+. ./lib.sh
 
 CSRDIR=req
 CFGDIR=etc
