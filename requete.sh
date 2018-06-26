@@ -2,7 +2,7 @@
 #
 # "${1:-/dev/stdin}" --> prend $1 si stdin est vide
 
-. ./select.sh
+. ./lib.sh
 
 WORKDIR=certs/
 EC="Courbe elliptique"
