@@ -1,36 +1,6 @@
 #!/bin/sh
 
-. lib.sh
-
-function s () {
-	case $1 in
-		key)
-			openssl pkey -in "$2" -pubout -outform pem | sha1sum
-		;;
-		csr)
-			openssl req  -in "$2" -pubkey -outform pem -noout | sha1sum
-		;;
-		crt)
-			openssl x509 -in "$2" -pubkey -outform pem -noout | sha1sum
-		;;
-		*)
-			echo #
-		;;
-	esac
-}
-
-function can_sign () {
-	local sign=0
-
-	for a in "Certificate Sign" "CRL Sign" "CA:TRUE"; do
-		[ $( openssl x509 -in "$1" -noout -text | grep -ic "$a" ) -ge 1 ] && let sign++
-	done
-
-	[ $sign -eq 3 ] && return 1 || return 0
-}
-
-function is_valid () {
-}
+. ./lib.sh
 
 # lister les crt dont :
 
