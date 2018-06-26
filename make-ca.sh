@@ -1,57 +1,106 @@
 #!/bin/sh
 
-# obtention du nom du certificat à promouvoir
-while [ -z "$NOM" ]; do
-	echo "quel est le nom de l'identité à promouvoir ?"
-	read NOM
-done
+. lib.sh
 
+function s () {
+	case $1 in
+		key)
+			openssl pkey -in "$2" -pubout -outform pem | sha1sum
+		;;
+		csr)
+			openssl req  -in "$2" -pubkey -outform pem -noout | sha1sum
+		;;
+		crt)
+			openssl x509 -in "$2" -pubkey -outform pem -noout | sha1sum
+		;;
+		*)
+			echo #
+		;;
+	esac
+}
 
-# vérifier présence cert/clef
-if [ ! -f "$NOM.crt" -o ! -f "$NOM.key" ] ; then
-	echo "fichiers introuvables"
+function can_sign () {
+	local sign=0
+
+	for a in "Certificate Sign" "CRL Sign" "CA:TRUE"; do
+		[ $( openssl x509 -in "$1" -noout -text | grep -ic "$a" ) -ge 1 ] && let sign++
+	done
+
+	[ $sign -eq 3 ] && return 1 || return 0
+}
+
+function is_valid () {
+}
+
+# lister les crt dont :
+
+#NOM=slct $(
+	for cert in $(ls -1 certs/*.crt) ; do
+		i=0
+	# on a une clef, c'est la bonne
+		if [ -f ${cert%.crt}.key ] ; then
+			[ "$( s crt "$cert" )" = "$( s key "${cert%.crt}.key" )" ] && let i++
+		fi
+	# on le droit de signer
+		[ $( can_sign "$cert" ) -eq 1 ] && let i++
+	# pas déjà été promu signataire
+		[ ! -d "ca/${cert%.crt}-ca" ] && let i++
+	# est valable
+		[ $( is_valid "$cert" ) ] && let i++
+		[ $i -eq 4 ] && echo "$cert"
+	done
+)
+
+if [ -z "$NOM" ] ; then
+	echo "aucun certificat sélectionné"
 	exit 1
 fi
 
+# calcul des noms des différents éléments de la future CA
+NOM=${cert%.crt}
 
-# vérifier cohérence cert/clef
-
-
-# vérifier si le cert a le droit de signer
-a=`openssl x509 -in certs/$NOM.crt  -noout -text | grep -ic "Certificate Sign"`
-b=`openssl x509 -in certs/$NOM.crt  -noout -text | grep -ic "CRL Sign"`
-c=`openssl x509 -in certs/$NOM.crt  -noout -text | grep -ic "CA:TRUE"`
-let "s = a + b + c"
-
-if [ $s -ne 3 ] ; then
-	echo "ce certificat ne peut pas porter le rôle d'autorité émettrice"
-	exit 2
-fi
+d_ca=ca/
+d_cadb=ca/$NOM-ca/db/
+d_pkey=ca/$NOM-ca/private/
+f_cert=
+f_pkey=
+f_bundle=
+f_crl=
+f_cfg=
+f_db=ca/$NOM-ca/db/$NOM-ca.db
+f_attr=ca/$NOM-ca/db/$NOM-ca.db.attr
+f_srl_crt=
+f_srl_crl=
 
 
 # création de la structure de la nouvelle CA
-mkdir -p "ca/$NOM-ca/db"
-mkdir -p -m 700 "ca/$NOM-ca/private"
+mkdir -p "$d_cadb"
+mkdir -p -m 700 "$d_pkey"
 
 
 # déplacer les fichier de l'identifier à promouvoir
-mv "certs/$NOM.key" "ca/$NOM-ca/private/"
-mv "certs/$NOM.*" "ca/"
+mv "certs/$NOM.key" "$d_pkey"
+mv "certs/$NOM.*" "$d_ca"
 
 
 # créer les éléments d'une CA
-cp /dev/null ca/$NOM-ca/db/$NOM-ca.db
-cp /dev/null ca/$NOM-ca/db/$NOM-ca.db.attr
-echo 01 > ca/$NOM-ca/db/$NOM-ca.crt.srl
-echo 01 > ca/$NOM-ca/db/$NOM-ca.crl.srl
+cp /dev/null "$f_db"
+cp /dev/null "$f_attr"
+echo 01 > "$f_srl_crt"
+echo 01 > "$f_srl_crl"
 
 
 # générer la chaine
-cat ca/$NOM-ca.crt ca/nc-root-ca.crt > ca/$NOM-ca-chain.pem
+# oulala
+# trouver la CA qui a signé le cert qu'on veut promouvoir
+# ajouter le crt dans le bundle
+# si selfsign, break
+# sinon prendre le cert ajouté et [recursion]
+cat "ca/$NOM-ca.crt" "ca/nc-root-ca.crt" > "ca/$NOM-ca-chain.pem"
 
 
 # générer une configuration
 
 
 # générer une crl
-openssl ca -gencrl -config etc/$NOM-ca.conf -out crl/$NOM-ca.crl
+openssl ca -gencrl -config etc/$NOM-ca.conf -out ca/$NOM-ca/$NOM-ca.crl
