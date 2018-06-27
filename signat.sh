@@ -39,13 +39,20 @@ done
 # validation i
 # si pas d'argument fourni, on recherche une CSR
 if [ -z "$req_file" ] ; then
-	slct $( for csr in $(ls -1 $CSRDIR/*.csr) ; do [ ! -f "${csr%.csr}.crt" ] && echo "$csr" ; done  )
+	slct  $(
+		for csr in $( ls -1 ${dir_req}*.csr 2>/dev/null ) ; do
+			h=$( basename "$csr" )
+			crt_file="${h%.csr}.crt"
+			[ ! -f "$dir_certs$crt_file" ] && echo "$csr"
+		done
+	)
 fi
 # si on a toujours pas d'arguments, c'est qu'il n'y avait rien en entrée et que la sélection n'a rien donné (pas de résultat/tout est signé)
 if [ -z "$req_file" ] ; then
 	echo "aucune requête disponible pour être signée"
 	exit 1
 fi
+
 # si le CRT associé existe, on sort car cette vérif a été exécuté lors de la selection des requêtes.
 # ce test ne sert que pour l'utilsation avec arguments
 if [ -f "${req_file%.csr}.crt" ] ; then
@@ -54,7 +61,7 @@ if [ -f "${req_file%.csr}.crt" ] ; then
 fi
 
 # validation c
-[ -z "$cfg_file" ] && slct $( ls *-ca/*.conf )
+[ -z "$cfg_file" ] && slct $( ls *-ca/*.conf 2>/dev/null )
 # choisir config, si liste vide, sortir
 if [ -z "$cfg_file" ] ; then
 	echo "aucune configuration disponible pour signer la requête"
