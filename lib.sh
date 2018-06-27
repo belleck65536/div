@@ -46,5 +46,31 @@ function can_sign () {
 	[ $sign -eq 3 ] && return 1 || return 0
 }
 
+function openssl_time2epoch () {
+	local M J H A
+
+	J=$2
+	H=$3
+	A=$4
+
+	case $1 in
+		Jan) M=01 ;;
+		Feb) M=02 ;;
+		Mar) M=03 ;;
+		Apr) M=04 ;;
+		May) M=05 ;;
+		Jun) M=06 ;;
+		Jul) M=07 ;;
+		Aug) M=08 ;;
+		Sep) M=09 ;;
+		Oct) M=10 ;;
+		Nov) M=11 ;;
+		Dec) M=12 ;;
+		*)   M=__ ;;
+	esac
+
+	date -d "$A-$M-$J $H" +%s
+}
+
 function is_valid () {
 }
