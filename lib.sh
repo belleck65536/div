@@ -73,4 +73,5 @@ function openssl_time2epoch () {
 }
 
 function is_valid () {
+	echo "invalide"
 }
