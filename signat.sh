@@ -4,9 +4,6 @@
 
 . ./lib.sh
 
-CSRDIR=req
-CFGDIR=etc
-
 function display_help () {
 	echo "Usage : $(basename $0) <configuration> <extensions> <requete>"
 	exit
