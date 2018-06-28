@@ -4,10 +4,6 @@
 
 . ./lib.sh
 
-WORKDIR=certs/
-EC="Courbe elliptique"
-RSA="Paire RSA"
-
 while [ "$NOMFIC" = "" ]; do
 	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " NOMFIC
 	if [ -f "$WORKDIR$NOMFIC.csr" -o -f "$WORKDIR$NOMFIC.key" ]; then
