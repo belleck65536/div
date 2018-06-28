@@ -51,7 +51,8 @@ function can_sign () {
 function openssl_time2epoch () {
 	local M J H A
 
-	J=$2
+	[ "$2" -le 9 ] && J=0$2 || J=$2
+
 	H=$3
 	A=$4
 
