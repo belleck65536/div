@@ -1,10 +1,10 @@
 #!/bin/sh
 
-dir_ca=ca/
-dir_cfg=etc/
-dir_req=req/
-dir_certs=certs/
-dir_logs=logs/
+dir_ca=ca
+dir_cfg=etc
+dir_req=req
+dir_certs=certs
+dir_logs=logs
 
 function slct () {
 	local i r c
@@ -32,7 +32,7 @@ function s () {
 		key) openssl pkey -in "$2" -pubout -outform pem | sha1sum ;;
 		csr) openssl req  -in "$2" -pubkey -outform pem -noout | sha1sum ;;
 		crt) openssl x509 -in "$2" -pubkey -outform pem -noout | sha1sum ;;
-		*) echo "\#" ;;
+		*) echo "_" ;;
 	esac
 }
 
