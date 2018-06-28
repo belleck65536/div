@@ -5,6 +5,8 @@ dir_cfg=etc
 dir_req=req
 dir_certs=certs
 dir_logs=logs
+EC="Courbe elliptique"
+RSA="Paire RSA"
 
 function slct () {
 	local i r c
