@@ -1,13 +1,14 @@
 #!/bin/sh
+#
+#
 
 . ./lib.sh
 
 # lister les crt dont :
-
-#NOM=slct $(
+NOM=slct $(
 	for cert in $(ls -1 certs/*.crt) ; do
 		i=0
-	# on a une clef, c'est la bonne
+	# on a une clef, cest la bonne
 		if [ -f ${cert%.crt}.key ] ; then
 			[ "$( s crt "$cert" )" = "$( s key "${cert%.crt}.key" )" ] && let i++
 		fi
