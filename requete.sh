@@ -28,7 +28,8 @@ case "$CLEF" in
 esac
 
 echo "Modèle de requête :"
-CFG_FILE=$( slct $( ls -1 "$dir_cfg/req*.conf" ) )
+CFG_FILE=$( slct $( ls -1 $dir_cfg ) )
+[ -z "$CFG_FILE" ] && die "aucun fichier de configuration disponible"
 
 # recherche des extensions disponibles
 EXT="$( slct $( grep -e "\[.*_ext\s*\]" "$CFG_FILE" | sed -r 's/\[\s*//g' | sed -r 's/_ext\s*\]//g' | tr '\n' ' ') )_ext"
