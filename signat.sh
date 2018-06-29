@@ -5,28 +5,13 @@
 . ./lib.sh
 
 function display_help () {
-	echo "Usage : $(basename $0) <configuration> <extensions> <requete>"
-	exit
+	die "Usage : $(basename $0) <configuration> <extensions> <requete>"
 }
 
 while getopts ":c:e:i:" opt; do
 	case $opt in
-		c)
-			if [ -f "$OPTARG" ] ; then
-				cfg_file="$OPTARG"
-			else
-				echo "erreur sur fichier de configuration \"$OPTARG\""
-				exit 1
-			fi
-		;;
-		i)
-			if [ -f "$OPTARG" ] ; then
-				req_file="$OPTARG"
-			else
-				echo "erreur sur fichier de requête \"$OPTARG\""
-				exit 1
-			fi
-		;;
+		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || die "erreur sur fichier de configuration \"$OPTARG\"" ;;
+		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || die "erreur sur fichier de requête \"$OPTARG\"" ;;
 		e) exten="$OPTARG" ;;
 		\?) echo "Invalid option: -$OPTARG" ; display_help ;;
 		:) echo "Option -$OPTARG requires an argument." ; display_help ;;
@@ -44,38 +29,25 @@ if [ -z "$req_file" ] ; then
 	)
 fi
 # si on a toujours pas d'arguments, c'est qu'il n'y avait rien en entrée et que la sélection n'a rien donné (pas de résultat/tout est signé)
-if [ -z "$req_file" ] ; then
-	echo "aucune requête disponible pour être signée"
-	exit 1
-fi
+[ -z "$req_file" ] && die "aucune requête disponible pour être signée"
 
 # si le CRT associé existe, on sort car cette vérif a été exécuté lors de la selection des requêtes.
 # ce test ne sert que pour l'utilsation avec arguments
-if [ -f "${req_file%.csr}.crt" ] ; then
-	echo "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\""
-	exit 1
-fi
+[ -f "${req_file%.csr}.crt" ] && die "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\""
 
 # validation c
 [ -z "$cfg_file" ] && slct $( ls *-ca/*.conf 2>/dev/null )
 # choisir config, si liste vide, sortir
-if [ -z "$cfg_file" ] ; then
-	echo "aucune configuration disponible pour signer la requête"
-	exit 1
-fi
+[ -z "$cfg_file" ] && die "aucune configuration disponible pour signer la requête"
 
 # validation e
 if [ -z "$exten" ] ; then
 	exten="$( slct $( grep -e "\s*\[.*_ca\s*\]\s*" "$cfg_file" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )_ca"
 fi
-if [ -z "$exten" ] ; then
-	echo "aucune extension disponible pour signer la requête"
-	exit 1
-fi
-if [ $( grep -ec "\s*\[\s*$exten\s*\]\s*" ) -lt 1 ] ; then
-	echo "extension \"$exten\" introuvable dans la configuration \"$cfg_file\""
-	exit 1
-fi
+
+[ -z "$exten" ] && die "aucune extension disponible pour signer la requête"
+
+[ $( grep -ec "\s*\[\s*$exten\s*\]\s*" ) -lt 1 ] && die "extension \"$exten\" introuvable dans la configuration \"$cfg_file\""
 
 echo openssl ca -config "$cfg_file" -in "$req_file" -out "${req_file%.csr}.crt" -extensions "$exten" -notext
 
