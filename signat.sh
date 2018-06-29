@@ -37,10 +37,9 @@ done
 # si pas d'argument fourni, on recherche une CSR
 if [ -z "$req_file" ] ; then
 	slct  $(
-		for csr in $( ls -1 ${dir_req}*.csr 2>/dev/null ) ; do
-			h=$( basename "$csr" )
-			crt_file="${h%.csr}.crt"
-			[ ! -f "$dir_certs$crt_file" ] && echo "$csr"
+		for csr in $( ls -1 ${dir_req}/*.csr 2>/dev/null ) ; do
+			crt_file=$( basename "${csr%.csr}.crt" )
+			[ ! -f "$dir_crt/$crt_file" ] && echo "$csr"
 		done
 	)
 fi
