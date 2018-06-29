@@ -28,18 +28,18 @@ case "$CLEF" in
 esac
 
 echo "Modèle de requête :"
-CFG_FILE=$( slct $( ls -1 $dir_cfg ) )
+CFG_FILE=$dir_cfg/$( slct $( ls -1 $dir_cfg ) )
 [ -z "$CFG_FILE" ] && die "aucun fichier de configuration disponible"
 
 # recherche des extensions disponibles
 EXT="$( slct $( grep -e "\[.*_ext\s*\]" "$CFG_FILE" | sed -r 's/\[\s*//g' | sed -r 's/_ext\s*\]//g' | tr '\n' ' ') )_ext"
-[ -z "$EXT" ] && exit
+[ -z "$EXT" ] && die "aucune extension trouvée dans ce fichier de configuration"
 
 # ajout d'subjectAltName suivant l'extension demandée
 # si mention "san" absente, alors on demande le SAN (logique="without san")
 if [ $(echo "$EXT" | grep -ic "san") -eq 0 ] ; then
 	printf "%s\n" "Définition du SAN suivant la forme <type>:<valeur>,<type>:<valeur>,..."
-	printf "%s\n" "éléments :\n\tDNS\n\tIP\n\tURI\n\temail\n\tRID\n\tdirName\n\totherName"
+	printf "Eléments :\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n" DNS IP URI email RID dirName otherName
 	printf "%s\n" "ex : DNS:www.example.com,IP:0.0.0.0"
 	while [ -z "$SANC" ]; do
 		read SANC
