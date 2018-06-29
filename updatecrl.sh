@@ -1,11 +1,6 @@
 #!/bin/sh
-# verifier l'expiration des crl, les mettre a jour si necessaire
-# et envoi crt + crl sur websrv
 
 . ./lib.sh
-
-cd $(dirname $0)
-#echo `pwd` >> ./pate.log
 
 let NOW=$( date +%s )+86400*1
 
@@ -30,4 +25,3 @@ done
 
 scp -B $dir_crl/*.crl dlboxwkr@dlbox:/var/www/html/pki/>/dev/null
 scp -B $dir_ca/*.crt dlboxwkr@dlbox:/var/www/html/pki/>/dev/null
-
