@@ -2,9 +2,10 @@
 
 dir_ca=ca
 dir_cfg=etc
+dir_key=req
 dir_req=req
-dir_certs=certs
-dir_logs=logs
+dir_crt=req
+dir_log=logs
 EC="Courbe elliptique"
 RSA="Paire RSA"
 
@@ -51,11 +52,6 @@ function can_sign () {
 function openssl_time2epoch () {
 	local M J H A
 
-	[ "$2" -le 9 ] && J=0$2 || J=$2
-
-	H=$3
-	A=$4
-
 	case $1 in
 		Jan) M=01 ;;
 		Feb) M=02 ;;
@@ -71,10 +67,18 @@ function openssl_time2epoch () {
 		Dec) M=12 ;;
 		*)   M=__ ;;
 	esac
+	[ "$2" -le 9 ] && J=0$2 || J=$2
+	H=$3
+	A=$4
 
 	date -d "$A-$M-$J $H" +%s
 }
 
 function is_valid () {
 	echo "invalide"
+}
+
+function die () {
+	echo "$1"
+	exit 1
 }
