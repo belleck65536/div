@@ -5,7 +5,7 @@ dir_cfg=etc
 dir_key=req
 dir_req=req
 dir_crt=req
-dir_crl=req
+dir_crl=crl
 dir_log=logs
 
 EC="Courbe elliptique"
