@@ -20,36 +20,29 @@ done
 
 # validation i
 # si pas d'argument fourni, on recherche une CSR
-if [ -z "$req_file" ] ; then
-	slct  $(
-		for csr in $( ls -1 ${dir_req}/*.csr 2>/dev/null ) ; do
-			crt_file=$( basename "${csr%.csr}.crt" )
-			[ ! -f "$dir_crt/$crt_file" ] && echo "$csr"
-		done
-	)
-fi
-# si on a toujours pas d'arguments, c'est qu'il n'y avait rien en entrée et que la sélection n'a rien donné (pas de résultat/tout est signé)
+[ -z "$req_file" ] && req_file= $( slct $(
+	for csr in $( ls -1 $dir_req/*.csr 2>/dev/null ) ; do
+		crt_file=$( basename "${csr%.csr}.crt" )
+		[ ! -f "$dir_crt/$crt_file" ] && echo "$csr"
+	done
+))
 [ -z "$req_file" ] && die "aucune requête disponible pour être signée"
-
-# si le CRT associé existe, on sort car cette vérif a été exécuté lors de la selection des requêtes.
-# ce test ne sert que pour l'utilsation avec arguments
 [ -f "${req_file%.csr}.crt" ] && die "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\""
 
+
 # validation c
-[ -z "$cfg_file" ] && slct $( ls *-ca/*.conf 2>/dev/null )
-# choisir config, si liste vide, sortir
+[ -z "$cfg_file" ] && cfg_file=$( slct $( ls -1 $dir_cfg/*.conf 2>/dev/null ) )
 [ -z "$cfg_file" ] && die "aucune configuration disponible pour signer la requête"
 
-# validation e
-if [ -z "$exten" ] ; then
-	exten="$( slct $( grep -e "\s*\[.*_ca\s*\]\s*" "$cfg_file" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )_ca"
-fi
 
+# validation e --> sélection *_ext
+[ -z "$exten" ] && exten="$( slct $( grep -e "\s*\[.*_ca\s*\]\s*" "$cfg_file" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )_ca"
 [ -z "$exten" ] && die "aucune extension disponible pour signer la requête"
-
 [ $( grep -ec "\s*\[\s*$exten\s*\]\s*" ) -lt 1 ] && die "extension \"$exten\" introuvable dans la configuration \"$cfg_file\""
 
+
 echo openssl ca -config "$cfg_file" -in "$req_file" -out "${req_file%.csr}.crt" -extensions "$exten" -notext
+
 
 if [ -f "${req_file%.csr}.key" -a -f "${req_file%.csr}.crt" ]; then
 	read -p "Convertir le certificat signé en PKCS#12 ? [y/n] " R
