@@ -4,7 +4,16 @@ Environnement busybox
 Se placer dans un dossier pour l'exécution de la CA :
 cd /.../pki
 
-dans le dossier de la pki, on aura :
+les éléments sont :
+	lib.sh --> bibliothèque et variables d'environnement
+	requete.sh --> créer une clef privée, créer un csr, autosignature
+	signat.sh --> signe une requête avec une autorité existante
+	make-ca.sh --> mettre en place l'arborescence pour d'une CA
+	crl.sh force --> créer une nouvelle CRL à partir d'une conf
+	crl.sh update --> mettre à jour si nécessaire toutes les CRL (à planifier)
+	revoke.sh --> révoquer un certificat signé par une CA
+
+Dans le dossier de la pki, on aura :
 	./ca	--> contient les bases de données des CA
 				./<CA>.crt --> certificat de la CA
 				./<CA>/ dossier des cert signés, nommées par leur S/N (copie du cert final)
