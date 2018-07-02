@@ -1,10 +1,8 @@
-# div
-
 Mini CA basée sur openssl
-Environnement Shell flavor busybox
+Environnement busybox
 
 Se placer dans un dossier pour l'exécution de la CA :
-cd xxx/pki
+cd /.../pki
 
 dans le dossier de la pki, on aura :
 	./ca	--> contient les bases de données des CA
@@ -17,7 +15,7 @@ dans le dossier de la pki, on aura :
 	./req	--> réception des requêtes de signature
 	
 Les emplacements configurables dans lib.sh sont :
-	CA (db srl² crt )
+	CA (db crt  srl²)
 	clef privée
 	certificat signé
 	requête de signature
