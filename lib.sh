@@ -9,6 +9,7 @@ dir_crl=crl
 dir_log=logs
 ext_req=_ext
 ext_ca=_ext
+ext_crl=_ext
 
 EC="Courbe elliptique"
 RSA="Paire RSA"
@@ -50,7 +51,7 @@ function can_sign () {
 		[ $( openssl x509 -in "$1" -noout -text | grep -ic "$a" ) -ge 1 ] && let sign++
 	done
 
-	[ $sign -eq 3 ] && return 0 || return 1
+	[ $sign -eq 3 ] && echo 0 || echo 1
 }
 
 function openssl_time2epoch () {
