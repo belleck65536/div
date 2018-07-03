@@ -24,7 +24,7 @@ case "$CLEF" in
 		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS" || exit
 	;;
 	"$RSA")
-		echo "Longueur de clef :" ; KEYARGS=$( slct 1024 2048 4096 8192 )
+		echo "Longueur de clef :" ; KEYARGS=$( slct 2048 4096 8192 )
 		[ -n "$KEYARGS" ] && KEYARGS="genrsa $KEYARGS" || exit
 	;;
 	*) exit ;;
@@ -37,7 +37,7 @@ CFG_FILE="$dir_cfg/$( slct $( ls -1 $dir_cfg ) )"
 
 
 # recherche des extensions disponibles
-EXT="$( slct $( grep -e "\[.*_ext\s*\]" "$CFG_FILE" | sed -r 's/\[\s*//g' | sed -r 's/_ext\s*\]//g' | tr '\n' ' ') )_ext"
+EXT="$( slct $( grep -e "\s*\[.*$ext_req\s*\]\s*" "$CFG_FILE" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )"
 [ -z "$EXT" ] && die "aucune extension trouvée dans ce fichier de configuration"
 
 
@@ -63,11 +63,11 @@ fi
 
 read -p "autosignature de la requête ? (ex : certificat racine / test) : " AS
 case "$AS" in
-	y|Y|o|O) AS=" -x509";;
+	y|Y|o|O) AS="-x509";;
 	n|N|*) AS="";;
 esac
 
 
 openssl $KEYARGS >> "$dir_key/$NOM.key"
 SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts "$EXT" -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key" $AS
-# ./signat.sh $CFG_FILE "$dir_req/$NOM.csr"
+# ./signat.sh -i "$dir_req/$NOM.csr"
