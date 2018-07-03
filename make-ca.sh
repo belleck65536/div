@@ -12,17 +12,17 @@ fi
 NOM=slct $(
 	for cert in $(ls -1 "$dir_crt"/*.crt) ; do
 		i=0
-	# on a une clef, cest la bonne
+			# on a une clef, cest la bonne
 		clef="$dir_key/${cert%.crt}.key"
 		if [ -f "$clef" ] ; then
 			[ "$( s crt "$cert" )" = "$( s key "$clef" )" ] && let i++
 		fi
-	# on le droit de signer
-		[ $( can_sign "$cert" ) -eq 1 ] && let i++
-	# pas déjà été promu signataire
+			# on le droit de signer
+		let i+=$( can_sign "$cert" )
+			# est valable (non révoké, chrono)
+		let i+=$( is_valid "$cert" )
+			# pas déjà été promu signataire
 		[ ! -d "$dir_ca/${cert%.crt}" ] && let i++
-	# est valable (non révoké, chrono)
-		[ $( is_valid "$cert" ) ] && let i++
 		[ $i -eq 4 ] && echo "$cert"
 	done
 )
