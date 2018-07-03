@@ -32,12 +32,12 @@ esac
 
 
 echo "Modèle de requête :"
-CFG_FILE="$dir_cfg/$( slct $( ls -1 $dir_cfg ) )"
+CFG_FILE=$( slct $( ls -1 "$dir_cfg"/* ) )
 [ -z "$CFG_FILE" ] && die "aucun fichier de configuration disponible"
 
 
 # recherche des extensions disponibles
-EXT="$( slct $( grep -e "\s*\[.*$ext_req\s*\]\s*" "$CFG_FILE" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )"
+EXT=$( slct $( grep -e "\s*\[.*$ext_req\s*\]\s*" "$CFG_FILE" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )
 [ -z "$EXT" ] && die "aucune extension trouvée dans ce fichier de configuration"
 
 
