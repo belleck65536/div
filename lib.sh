@@ -7,7 +7,8 @@ dir_req=req
 dir_crt=req
 dir_crl=crl
 dir_log=logs
-sfx_ext=_ext
+ext_req=_ext
+ext_ca=_ext
 
 EC="Courbe elliptique"
 RSA="Paire RSA"
