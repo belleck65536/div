@@ -40,8 +40,8 @@ done
 [ -z "$cfg_file" ] && die "aucune configuration disponible pour signer la requête"
 
 
-# validation e - si pas d'arg, select extension "*$pfx_ext"
-[ -z "$exten" ] && exten="$( slct $( grep -e "\s*\[.*$pfx_ext\s*\]\s*" "$cfg_file" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )$pfx_ext"
+# validation e - si pas d'arg, select extension "*$ext_ca"
+[ -z "$exten" ] && exten="$( slct $( grep -e "\s*\[.*$ext_ca\s*\]\s*" "$cfg_file" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )"
 [ -z "$exten" ] && die "aucune extension disponible pour signer la requête"
 [ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die "anomalie sur extension \"$exten\" dans la configuration \"$cfg_file\""
 
