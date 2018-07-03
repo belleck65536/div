@@ -26,17 +26,18 @@ done
 
 # validation i - si pas d'arg, select CSR
 [ -z "$req_file" ] && req_file= $( slct $(
-	for csr in $( ls -1 $dir_req/*.csr 2>/dev/null ) ; do
-		crt_file=$( basename "${csr%.csr}.crt" )
-		[ ! -f "$dir_crt/$crt_file" ] && echo "$csr"
+	for csr in $( ls -1 "$dir_req"/*.csr 2>/dev/null ) ; do
+		crt_file="$dir_crt/$( basename "${csr%.csr}.crt" )"
+		[ ! -f "$crt_file" ] && echo "$csr"
 	done
 ))
 [ -z "$req_file" ] && die "aucune requête disponible pour être signée"
-[ -f "${req_file%.csr}.crt" ] && die "Nom de certificat signé déjà utilisé \"${req_file%.csr}.crt\""
+crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
+[ -f "$crt_file" ] && die "Nom de certificat signé déjà utilisé \"$crt_file\""
 
 
 # validation c - si pas d'arg, select conf
-[ -z "$cfg_file" ] && cfg_file=$( slct $( ls -1 $dir_cfg/*.conf 2>/dev/null ) )
+[ -z "$cfg_file" ] && cfg_file=$( slct $( ls -1 "$dir_cfg"/*.conf 2>/dev/null ) )
 [ -z "$cfg_file" ] && die "aucune configuration disponible pour signer la requête"
 
 
@@ -46,4 +47,4 @@ done
 [ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die "anomalie sur extension \"$exten\" dans la configuration \"$cfg_file\""
 
 
-openssl ca -config "$cfg_file" -in "$req_file" -out "${req_file%.csr}.crt" -extensions "$exten" -notext
+openssl ca -config "$cfg_file" -in "$req_file" -out "$crt_file" -extensions "$exten" -notext
