@@ -1,6 +1,12 @@
 #!/bin/sh
 
-. ./lib.sh
+if [ -f "./lib.sh" ] ; then
+	. ./lib.sh
+else
+	echo "lib.sh introuvable, démarrage impossible"
+	exit 1
+fi
+
 
 while [ "$NOM" = "" ]; do
 	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " NOM
@@ -9,6 +15,7 @@ while [ "$NOM" = "" ]; do
 		NOM=""
 	fi;
 done
+
 
 echo "Type de clef ?"
 CLEF=$( slct "$EC" "$RSA" )
@@ -27,13 +34,16 @@ case "$CLEF" in
 	*) exit ;;
 esac
 
+
 echo "Modèle de requête :"
-CFG_FILE=$dir_cfg/$( slct $( ls -1 $dir_cfg ) )
+CFG_FILE="$dir_cfg/$( slct $( ls -1 $dir_cfg ) )"
 [ -z "$CFG_FILE" ] && die "aucun fichier de configuration disponible"
+
 
 # recherche des extensions disponibles
 EXT="$( slct $( grep -e "\[.*_ext\s*\]" "$CFG_FILE" | sed -r 's/\[\s*//g' | sed -r 's/_ext\s*\]//g' | tr '\n' ' ') )_ext"
 [ -z "$EXT" ] && die "aucune extension trouvée dans ce fichier de configuration"
+
 
 # ajout d'subjectAltName suivant l'extension demandée
 # si mention "san" absente, alors on demande le SAN (logique="without san")
@@ -53,7 +63,15 @@ if [ $(echo "$EXT" | grep -ic "san") -eq 0 ] ; then
 else
 	SANC="#"
 fi
-	
+
+
+read -p "autosignature de la requête ? (ex : certificat racine / test) : " AS
+case "$AS" in
+	y|Y|o|O) AS=" -x509";;
+	n|N|*) AS="";;
+esac
+
+
 openssl $KEYARGS >> "$dir_key/$NOM.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts $EXT -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key"
+SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts $EXT -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key" -x509
 # ./signat.sh $CFG_FILE "$dir_req/$NOM.csr"
