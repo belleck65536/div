@@ -17,18 +17,14 @@ while [ "$NOM" = "" ]; do
 done
 
 
-echo "Type de clef ?"
-CLEF=$( slct "$EC" "$RSA" )
-
+echo "Type de clef ?" ; CLEF=$( slct "$EC" "$RSA" )
 case "$CLEF" in 
 	"$EC")
-		echo "Type de courbe :"
-		KEYARGS=$( slct secp521r1 secp384r1 prime256v1 )
+		echo "Type de courbe :" ; KEYARGS=$( slct secp521r1 secp384r1 prime256v1 )
 		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS" || exit
 	;;
 	"$RSA")
-		echo "Longueur de clef :"
-		KEYARGS=$( slct 1024 2048 4096 8192 )
+		echo "Longueur de clef :" ; KEYARGS=$( slct 1024 2048 4096 8192 )
 		[ -n "$KEYARGS" ] && KEYARGS="genrsa $KEYARGS" || exit
 	;;
 	*) exit ;;
@@ -61,7 +57,7 @@ if [ $(echo "$EXT" | grep -ic "san") -eq 0 ] ; then
 		esac
 	done
 else
-	SANC="#"
+	SANC="_"
 fi
 
 
@@ -73,5 +69,5 @@ esac
 
 
 openssl $KEYARGS >> "$dir_key/$NOM.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts $EXT -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key" -x509
+SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts "$EXT" -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key" $AS
 # ./signat.sh $CFG_FILE "$dir_req/$NOM.csr"
