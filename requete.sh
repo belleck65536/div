@@ -61,13 +61,13 @@ else
 fi
 
 
-read -p "autosignature de la requête ? (ex : certificat racine / test) : " AS
-case "$AS" in
-	y|Y|o|O) AS="-x509";;
-	n|N|*) AS="";;
+read -p "autosignature de la requête ? (ex : certificat racine / test) [y|N] : " ASask
+case "$ASask" in
+	y|Y|o|O) AS="-x509 -extensions";;
+	n|N|*) AS="-reqexts";;
 esac
 
 
 openssl $KEYARGS >> "$dir_key/$NOM.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" -reqexts "$EXT" -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key" $AS
+SAN=$SANC openssl req -new -config "$CFG_FILE" $AS "$EXT" -out "$dir_req/$NOM.csr" -key "$dir_key/$NOM.key"
 # ./signat.sh -i "$dir_req/$NOM.csr"
