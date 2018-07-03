@@ -1,22 +1,27 @@
 #!/bin/sh
-#
-#
 
-. ./lib.sh
+if [ -f "./lib.sh" ] ; then
+	. ./lib.sh
+else
+	echo "lib.sh introuvable, démarrage impossible"
+	exit 1
+fi
+
 
 # lister les crt dont :
 NOM=slct $(
-	for cert in $(ls -1 certs/*.crt) ; do
+	for cert in $(ls -1 "$dir_crt"/*.crt) ; do
 		i=0
 	# on a une clef, cest la bonne
-		if [ -f ${cert%.crt}.key ] ; then
-			[ "$( s crt "$cert" )" = "$( s key "${cert%.crt}.key" )" ] && let i++
+		clef="$dir_key/${cert%.crt}.key"
+		if [ -f "$clef" ] ; then
+			[ "$( s crt "$cert" )" = "$( s key "$clef" )" ] && let i++
 		fi
 	# on le droit de signer
 		[ $( can_sign "$cert" ) -eq 1 ] && let i++
 	# pas déjà été promu signataire
-		[ ! -d "ca/${cert%.crt}-ca" ] && let i++
-	# est valable
+		[ ! -d "$dir_ca/${cert%.crt}" ] && let i++
+	# est valable (non révoké, chrono)
 		[ $( is_valid "$cert" ) ] && let i++
 		[ $i -eq 4 ] && echo "$cert"
 	done
@@ -67,11 +72,11 @@ echo 01 > "$f_srl_crl"
 # ajouter le crt dans le bundle
 # si selfsign, break
 # sinon prendre le cert ajouté et [recursion]
-cat "ca/$NOM-ca.crt" "ca/nc-root-ca.crt" > "ca/$NOM-ca-chain.pem"
+cat "$dir_ca/$NOM.crt" "$dir_ca/nc-root-ca.crt" > "$dir_ca/$NOM-ca-chain.pem"
 
 
 # générer une configuration
 
 
 # générer une crl
-openssl ca -gencrl -config etc/$NOM-ca.conf -out ca/$NOM-ca/$NOM-ca.crl
+openssl ca -gencrl -config etc/$NOM.conf -out $dir_crl/$NOM.crl
