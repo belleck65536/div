@@ -1,13 +1,19 @@
 #!/bin/sh
 
-. ./lib.sh
+if [ -f "./lib.sh" ] ; then
+	. ./lib.sh
+else
+	echo "lib.sh introuvable, démarrage impossible"
+	exit 1
+fi
+
 
 let NOW=$( date +%s )+86400*1
 
 # pour la CRL de chaque CA
-for crl in $(ls -1 "$dir_crl"); do
+for crl in $(ls -1 "$dir_crl"/*); do
 	# obtention de la date de fin de validité de la CRL
-	CRL_END=$( openssl crl -in "$dir_crl/$crl" -nextupdate -noout 2>/dev/null )
+	CRL_END=$( openssl crl -in "$crl" -nextupdate -noout 2>/dev/null )
 	CRL_END=$( openssl_time2epoch ${CRL_END#nextUpdate=} )
 
 	# si mise à jour forcée, on modifie l'expiration de la CRL à la nuit des temps
