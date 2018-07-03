@@ -12,6 +12,7 @@ les éléments sont :
 	crl.sh force --> créer une nouvelle CRL à partir d'une conf
 	crl.sh update --> mettre à jour si nécessaire toutes les CRL (à planifier)
 	revoke.sh --> révoquer un certificat signé par une CA
+	convert.sh --> transformer crt+key=>p12, crt=>p7b, crt+key=>csr, crl=>p7b
 
 Dans le dossier de la pki, on aura :
 	./ca	--> contient les bases de données des CA
