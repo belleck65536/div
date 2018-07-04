@@ -83,6 +83,11 @@ function seek_ext () {
 	grep -e "\s*\[.*$1\s*\]\s*" "$2" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' '
 }
 
+function curve_list ()  {
+	# openssl ecparam -list_curves | grep -e "^\s\s.*" | sed 's/:.*//g' | sed 's/\s*//g'
+	echo secp521r1 secp384r1 prime256v1
+}
+
 function is_valid () {
 	echo 1
 }
