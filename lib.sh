@@ -84,6 +84,6 @@ function is_valid () {
 }
 
 function die () {
-	echo "$1"
-	exit 1
+	echo "$2"
+	exit $1
 }
