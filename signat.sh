@@ -8,18 +8,13 @@ else
 fi
 
 
-function display_help () {
-	die "Usage : $(basename $0) <configuration> <extensions> <requete>"
-}
-
-
 while getopts ":c:e:i:" opt; do
 	case $opt in
-		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || die "erreur sur fichier de configuration \"$OPTARG\"" ;;
-		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || die "erreur sur fichier de requête \"$OPTARG\"" ;;
+		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || die 2 "erreur sur fichier de configuration \"$OPTARG\"" ;;
+		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || die 2 "erreur sur fichier de requête \"$OPTARG\"" ;;
 		e) exten="$OPTARG" ;;
-		\?) echo "Invalid option: -$OPTARG" ; display_help ;;
-		:) echo "Option -$OPTARG requires an argument." ; display_help ;;
+		\?) die 1 "Invalid option: -$OPTARG" ;;
+		:)  die 1 "Option -$OPTARG requires an argument." ;;
 	esac
 done
 
@@ -31,20 +26,20 @@ done
 		[ ! -f "$crt_file" ] && echo "$csr"
 	done
 ))
-[ -z "$req_file" ] && die "aucune requête disponible pour être signée"
+[ -z "$req_file" ] && die 3 "aucune requête disponible pour être signée"
 crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
-[ -f "$crt_file" ] && die "Nom de certificat signé déjà utilisé \"$crt_file\""
+[ -f "$crt_file" ] && die 3 "Nom de certificat signé déjà utilisé \"$crt_file\""
 
 
 # validation c - si pas d'arg, select conf
 [ -z "$cfg_file" ] && cfg_file=$( slct $( ls -1 "$dir_cfg"/*.conf 2>/dev/null ) )
-[ -z "$cfg_file" ] && die "aucune configuration disponible pour signer la requête"
+[ -z "$cfg_file" ] && die 4 "aucune configuration disponible pour signer la requête"
 
 
 # validation e - si pas d'arg, select extension "*$ext_ca"
-[ -z "$exten" ] && exten="$( slct $( grep -e "\s*\[.*$ext_ca\s*\]\s*" "$cfg_file" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )"
-[ -z "$exten" ] && die "aucune extension disponible pour signer la requête"
-[ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die "anomalie sur extension \"$exten\" dans la configuration \"$cfg_file\""
+[ -z "$exten" ] && exten="$( slct $( seek_ext "$ext_ca" "$cfg_file" ) )"
+[ -z "$exten" ] && die 5 "aucune extension disponible pour signer la requête"
+[ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die 5 "anomalie sur extension \"$exten\" dans la configuration \"$cfg_file\""
 
 
 openssl ca -config "$cfg_file" -in "$req_file" -out "$crt_file" -extensions "$exten" -notext
