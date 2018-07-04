@@ -35,13 +35,20 @@ function slct () {
 	printf "%s" "$r"
 }
 
-function s () {
-	case $1 in
-		key) openssl pkey -in "$2" -pubout -outform pem | sha1sum ;;
-		csr) openssl req  -in "$2" -pubkey -outform pem -noout | sha1sum ;;
-		crt) openssl x509 -in "$2" -pubkey -outform pem -noout | sha1sum ;;
-		*) echo "_" ;;
+function match () {
+	case "${1##*.}" in
+		key) as="$( openssl pkey -in "$1" -pubout -outform pem | sha1sum )" ;;
+		csr) as="$( openssl req  -in "$1" -pubkey -outform pem -noout | sha1sum )" ;;
+		crt) as="$( openssl x509 -in "$1" -pubkey -outform pem -noout | sha1sum )" ;;
+		*) as="_" ;;
 	esac
+	case "${2##*.}" in
+		key) bs="$( openssl pkey -in "$2" -pubout -outform pem | sha1sum )" ;;
+		csr) bs="$( openssl req  -in "$2" -pubkey -outform pem -noout | sha1sum )" ;;
+		crt) bs="$( openssl x509 -in "$2" -pubkey -outform pem -noout | sha1sum )" ;;
+		*) bs="_" ;;
+	esac
+	[ "$as" = "$bs" ] && echo "1" || echo "0"
 }
 
 function can_sign () {
