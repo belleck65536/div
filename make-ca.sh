@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ -f "./lib.sh" ] ; then
-	. ./lib.sh
+if [ -f "$(dirname "$0")/lib.sh" ] ; then
+	. "$(dirname "$0")/lib.sh"
 else
 	echo "lib.sh introuvable, démarrage impossible"
 	exit 1
