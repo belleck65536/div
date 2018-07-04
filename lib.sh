@@ -79,6 +79,10 @@ function openssl_time2epoch () {
 	date -d "$A-$M-$J $H" +%s
 }
 
+function seek_ext () {
+	grep -e "\s*\[.*$1\s*\]\s*" "$2" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' '
+}
+
 function is_valid () {
 	echo 1
 }
