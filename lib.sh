@@ -85,7 +85,7 @@ function seek_ext () {
 
 function curve_list ()  {
 	# openssl ecparam -list_curves | grep -e "^\s\s.*" | sed 's/:.*//g' | sed 's/\s*//g'
-	echo secp521r1 secp384r1 prime256v1
+	echo secp112r1 secp521r1 secp384r1 prime256v1
 }
 
 function is_valid () {
