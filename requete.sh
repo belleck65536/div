@@ -49,12 +49,6 @@ if [ $(echo "$EXT" | grep -ic "san") -eq 0 ] ; then
 	printf "%s\n" "ex : DNS:www.example.com,IP:0.0.0.0"
 	while [ -z "$SANC" ]; do
 		read SANC
-		case $SANC in
-			"") echo "???" ;;
-			*)	read -p "Appuyez sur une touche pour continuer" D
-				SANC="$SANC"
-				;;
-		esac
 	done
 else
 	SANC="_"
