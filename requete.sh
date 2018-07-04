@@ -8,11 +8,11 @@ else
 fi
 
 
-while [ "$NOM" = "" ]; do
-	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " NOM
-	if [ -f "$dir_req/$NOM.csr" -o -f "$dir_key/$NOM.key" ]; then
+while [ -z "$nom" ]; do
+	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " nom
+	if [ -f "$dir_req/$nom.csr" -o -f "$dir_key/$nom.key" ]; then
 		echo "nom de requête déjà utilisé"
-		NOM=""
+		nom=""
 	fi;
 done
 
@@ -20,7 +20,7 @@ done
 echo "Type de clef ?" ; CLEF=$( slct "$EC" "$RSA" )
 case "$CLEF" in 
 	"$EC")
-		echo "Type de courbe :" ; KEYARGS=$( slct secp521r1 secp384r1 prime256v1 )
+		echo "Type de courbe :" ; KEYARGS=$( slct $(curve_list) )
 		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS" || exit
 	;;
 	"$RSA")
@@ -37,7 +37,7 @@ CFG_FILE=$( slct $( ls -1 "$dir_cfg"/* ) )
 
 
 # recherche des extensions disponibles
-EXT=$( slct $( grep -e "\s*\[.*$ext_req\s*\]\s*" "$CFG_FILE" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )
+EXT=$( slct $( seek_ext "$ext_req" "$CFG_FILE" ) )
 [ -z "$EXT" ] && die 2 "aucune extension trouvée dans ce fichier de configuration"
 
 
@@ -68,6 +68,6 @@ case "$ASask" in
 esac
 
 
-openssl $KEYARGS >> "$dir_key/$NOM.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" $AS "$EXT" -out "$dir_req/$NOM.$fe" -key "$dir_key/$NOM.key"
-# ./signat.sh -i "$dir_req/$NOM.csr"
+openssl $KEYARGS >> "$dir_key/$nom.key"
+SAN=$SANC openssl req -new -config "$CFG_FILE" $AS "$EXT" -out "$dir_req/$nom.$fe" -key "$dir_key/$nom.key"
+# ./signat.sh -i "$dir_req/$nom.csr"
