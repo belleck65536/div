@@ -1,7 +1,7 @@
 #!/bin/sh
 cd "$(dirname "$0")"
 if [ -f "./lib.sh" ] ; then
-	. ./lib.sh"
+	. "./lib.sh"
 else
 	echo "lib.sh introuvable, démarrage impossible"
 	exit 1
