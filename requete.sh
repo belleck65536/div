@@ -33,12 +33,12 @@ esac
 
 echo "Modèle de requête :"
 CFG_FILE=$( slct $( ls -1 "$dir_cfg"/* ) )
-[ -z "$CFG_FILE" ] && die "aucun fichier de configuration disponible"
+[ -z "$CFG_FILE" ] && die 1 "aucun fichier de configuration disponible"
 
 
 # recherche des extensions disponibles
 EXT=$( slct $( grep -e "\s*\[.*$ext_req\s*\]\s*" "$CFG_FILE" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' ') )
-[ -z "$EXT" ] && die "aucune extension trouvée dans ce fichier de configuration"
+[ -z "$EXT" ] && die 2 "aucune extension trouvée dans ce fichier de configuration"
 
 
 # ajout d'subjectAltName suivant l'extension demandée
