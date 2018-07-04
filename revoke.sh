@@ -1,12 +1,19 @@
 #!/bin/sh
-#set CA SERNUM RAISON
+cd "$(dirname "$0")"
+if [ -f "./lib.sh" ] ; then
+	. "./lib.sh"
+else
+	echo "lib.sh introuvable, dÃ©marrage impossible"
+	exit 1
+fi
+
 
 echo "
-Sélection de l'autorité régissant le certificat à révoquer :
-1. Autorité Racine
-2. Autorité SSL/TLS
-3. Autorité Software
-4. Autorité Email
+SÃ©lection de l'autoritÃ© rÃ©gissant le certificat Ã  rÃ©voquer :
+1. AutoritÃ© Racine
+2. AutoritÃ© SSL/TLS
+3. AutoritÃ© Software
+4. AutoritÃ© Email
 "
 while [ "$CA" = "" ]; do
 	read
@@ -20,25 +27,25 @@ while [ "$CA" = "" ]; do
 done
 
 echo "
-Numéro de série du certificat ?
+NumÃ©ro de sÃ©rie du certificat ?
 "
 while true; do
 	read SERNUM
 	if [ -f "ca/nc-$CA-ca/$SERNUM.pem" ]; then
 		break;
 	else
-		echo "Numéro de série introuvable sous ca/nc-$CA-ca";
+		echo "NumÃ©ro de sÃ©rie introuvable sous ca/nc-$CA-ca";
 	fi
 done
 
 echo "
-Raison de la révocation ?
-1. Non spécifié
+Raison de la rÃ©vocation ?
+1. Non spÃ©cifiÃ©
 2. Certificat compromis
-3. Autorité de certification compromise
+3. AutoritÃ© de certification compromise
 4. Modification de l.affiliation
-5. Certificat remplacé
-6. Cessation d.activité
+5. Certificat remplacÃ©
+6. Cessation d.activitÃ©
 "
 while [ "$RAISON" = "" ]
 do
@@ -56,10 +63,10 @@ done
 
 openssl x509 -in "ca/nc-$CA-ca/$SERNUM.pem" -noout -issuer -serial -subject -nameopt RFC2253
 
-read -p "Sûr ? [y/n] "
+read -p "SÃ»r ? [y/n] "
 if [ "${REPLY::1}" = "y" ]; then
 	openssl ca -config "etc/nc-$CA-ca.conf" -revoke "ca/nc-$CA-ca/$SERNUM.pem" -crl_reason $RAISON;
 	openssl ca -gencrl -config "etc/nc-$CA-ca.conf" -out "crl/nc-$CA-ca.crl" 2>/dev/null
-	# scp -B /mnt/sda1/pki/crl/*.crl 10.0.1.35:/var/www/html/pki/>/dev/null
+	# scp -B /mnt/sda1/pki/crl/*.crl 0.0.0.0:/var/www/html/pki/>/dev/null
 	/mnt/sda1/pki/updatecrl.sh
 fi
