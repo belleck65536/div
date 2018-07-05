@@ -32,7 +32,7 @@ esac
 
 
 echo "Modèle de requête :"
-CFG_FILE=$( slct $( ls -1 "$dir_cfg"/* ) )
+CFG_FILE=$( slct $( ls -1 "$dir_cfg"/*.conf ) )
 [ -z "$CFG_FILE" ] && die 1 "aucun fichier de configuration disponible"
 
 
