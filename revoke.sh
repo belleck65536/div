@@ -10,7 +10,7 @@ fi
 
 echo "Sélection de l'autorité régissant le certificat à révoquer : "
 ca=$(slct $(
-	for authority in $( ls -1 "$dir_ca"/ 2>/dev/null ) ; do
+	for authority in $( ls -1d "$dir_ca"/* 2>/dev/null ) ; do
 		[ -d "$authority" ] && echo "$(basename "$authority")"
 	done
 ))
@@ -20,7 +20,7 @@ ca=$(slct $(
 echo "Numéro de série du certificat ? "
 crt_sn=$( slct $(
 	# obtenir une liste des certificats signés dans le dossier de la CA
-	for crt in $( ls -1 "$dir_ca/$ca"/*.pem ) ; do
+	for crt in $( ls -1d "$dir_ca/$ca"/*.pem ) ; do
 		sn=$( basename "${crt%.pem}" )
 		ligne=$( grep -i -e "[RVE]$tab[0-9]{12}Z$tab.*$tab[0-9A-Fa-f]+$tab.*$tab[^$tab]*" "$dir_ca/$ca/db/$ca.db" )
 		st=$(  echo "$ligne" | cut -f1 )
