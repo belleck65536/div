@@ -23,7 +23,7 @@ case "$1" in
 			force_update=1
 		fi
 		for crl in $(ls -1 "$dir_crl"/*); do
-			if [ -n $force_update ] ; then
+			if [ "$force_update" = "1" ] ; then
 				# si mise à jour forcée, on modifie l'expiration de la CRL à la nuit des temps
 				CRL_END=0
 			else
@@ -35,7 +35,8 @@ case "$1" in
 			# si la CRL est dépassée, on renouvelle
 			if [ $NOW -ge $CRL_END ]; then
 				echo "$( date ) - renouvellement de $crl" >>updt.log
-				openssl ca -gencrl -config "$dir_cfg/${crl%.crl}.conf" -out "$crl" 2>/dev/null
+				cfg="$dir_cfg/$( basename "${crl%.crl}.conf" )"
+				openssl ca -gencrl -config "$cfg" -out "$crl" 2>/dev/null
 			fi
 		done
 	;;
