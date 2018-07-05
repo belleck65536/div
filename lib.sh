@@ -13,6 +13,7 @@ ext_crl=_ext
 
 EC="Courbe elliptique"
 RSA="Paire RSA"
+tab=$( printf "\t" )
 
 let NOW=$( date +%s )+86400*1
 
