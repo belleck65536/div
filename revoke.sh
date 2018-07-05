@@ -17,7 +17,6 @@ ca=$(slct $(
 [ -z "$ca" ] && exit
 
 
-$tab=$( printf "\t" )
 echo "Numéro de série du certificat ? "
 crt_sn=$( slct $(
 	# obtenir une liste des certificats signés dans le dossier de la CA
