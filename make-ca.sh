@@ -10,7 +10,7 @@ fi
 
 # lister les crt dont :
 NOM=slct $(
-	for cert in $(ls -1 "$dir_crt"/*.crt) ; do
+	for cert in $(ls -1d "$dir_crt"/*.crt) ; do
 		clef="$dir_key/$( basename "${cert%.crt}.key" )"
 		i=0
 		let i+=$( match "$cert" "$clef" )
