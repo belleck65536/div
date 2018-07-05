@@ -8,9 +8,6 @@ else
 fi
 
 
-let NOW=$( date +%s )+86400*1
-
-
 case "$1" in
 	force)
 		cfg_file="$2"
