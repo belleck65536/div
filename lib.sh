@@ -14,6 +14,8 @@ ext_crl=_ext
 EC="Courbe elliptique"
 RSA="Paire RSA"
 
+let NOW=$( date +%s )+86400*1
+
 function slct () {
 	local i r c
 	[ $# -lt 1 ] && return
