@@ -44,7 +44,6 @@ openssl x509 -in "$dir_ca/$ca/$crt_sn.pem" -noout -issuer -serial -subject -name
 
 read -p "Sûr ? [y/n] "
 if [ "${REPLY::1}" = "y" ]; then
-	openssl ca -config "$dir_etc/$ca.conf" -revoke "$dir_ca/$ca/$crt_sn.pem" -crl_reason $raison;
-#	openssl ca -gencrl -config "etc/nc-$CA-ca.conf" -out "crl/nc-$CA-ca.crl" 2>/dev/null
+	openssl ca -config "$dir_etc/$ca.conf" -revoke "$dir_ca/$ca/$crt_sn.pem" -crl_reason $raison
 #	/mnt/sda1/pki/updatecrl.sh
 fi
