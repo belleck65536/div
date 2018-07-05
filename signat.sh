@@ -20,7 +20,7 @@ done
 
 
 # validation i - si pas d'arg, select CSR
-[ -z "$req_file" ] && req_file= $( slct $(
+[ -z "$req_file" ] && req_file=$( slct $(
 	for csr in $( ls -1 "$dir_req"/*.csr 2>/dev/null ) ; do
 		crt_file="$dir_crt/$( basename "${csr%.csr}.crt" )"
 		[ ! -f "$crt_file" ] && echo "$csr"
