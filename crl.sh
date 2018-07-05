@@ -16,7 +16,7 @@ case "$1" in
 	;;
 	update)
 		[ "$2" = "-f" ] && force_update=1 || force_update=0	
-		for crl_file in $(ls -1 "$dir_crl"/*); do
+		for crl_file in $(ls -1d "$dir_crl"/*); do
 			if [ "$force_update" = "1" ] ; then
 				echo "$( date ) - mise à jour forcée" >>$dir_log/updt.log
 				# si mise à jour forcée, on modifie l'expiration de la CRL à la nuit des temps
