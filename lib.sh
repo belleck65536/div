@@ -96,6 +96,11 @@ function openssl_time2epoch () {
 	date -d "$A-$M-$J $H" +%s
 }
 
+function die () {
+	echo "$2"
+	exit $1
+}
+
 function seek_ext () {
 	grep -e "\s*\[.*$1\s*\]\s*" "$2" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' '
 }
@@ -107,9 +112,4 @@ function curve_list ()  {
 
 function is_valid () {
 	echo 1
-}
-
-function die () {
-	echo "$2"
-	exit $1
 }
