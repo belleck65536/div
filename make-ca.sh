@@ -26,7 +26,7 @@ NOM=slct $(
 
 
 # calcul des noms des différents éléments de la future CA
-NOM="$( basename "${cert%.crt}" )"
+NOM="$( basename "${NOM%.crt}" )"
 
 
 # création de la structure de la nouvelle CA
@@ -40,10 +40,10 @@ mv "$dir_crt/$NOM.crt" "$dir_ca/$NOM"
 
 
 # créer les éléments d'une CA
-cp /dev/null "ca/$NOM-ca/db/$NOM-ca.db"
-cp /dev/null "ca/$NOM-ca/db/$NOM-ca.db.attr"
-echo 01 > "$dir_ca/$NOM/db/root-ca.crt.srl"
-echo 01 > "$dir_ca/$NOM/db/root-ca.crl.srl"
+cp /dev/null "$dir_ca/$NOM/db/$NOM.db"
+cp /dev/null "$dir_ca/$NOM/db/$NOM.db.attr"
+echo 01 > "$dir_ca/$NOM/db/$NOM.crt.srl"
+echo 01 > "$dir_ca/$NOM/db/$NOM.crl.srl"
 
 
 # générer la chaine
@@ -55,11 +55,11 @@ echo 01 > "$dir_ca/$NOM/db/root-ca.crl.srl"
 # ajouter le crt dans le bundle
 # si selfsign, break
 # sinon prendre le cert ajouté et [recursion]
-cat "$dir_ca/$NOM.crt" "$dir_ca/nc-root-ca.crt" > "$dir_ca/$NOM-ca-chain.pem"
+#cat "$dir_ca/$NOM.crt" "$dir_ca/nc-root-ca.crt" > "$dir_ca/$NOM-ca-chain.pem"
 
 
 # générer une configuration
 
 
 # générer une crl
-openssl ca -gencrl -config etc/$NOM.conf -out $dir_crl/$NOM.crl
+#openssl ca -gencrl -config etc/$NOM.conf -out $dir_crl/$NOM.crl
