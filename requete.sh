@@ -10,7 +10,7 @@ fi
 
 while [ -z "$nom" ]; do
 	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " nom
-	if [ -f "$dir_req/$nom.csr" -o -f "$dir_key/$nom.key" ]; then
+	if [ -f "$dir_req/$nom.csr" -o -f "$dir_key/$nom.key" -o -d "$dir_ca/$nom" ]; then
 		echo "nom de requête déjà utilisé"
 		nom=""
 	fi;
@@ -31,6 +31,9 @@ case "$CLEF" in
 esac
 
 
+# en fait, la requête ne devrait contenir que l'extension SAN
+# le reste sera ajouté à la signature de la requête
+# au final, c'est avec ou sans SAN l'important
 echo "Modèle de requête :"
 CFG_FILE=$( slct $( ls -1d "$dir_cfg"/*.conf ) )
 [ -z "$CFG_FILE" ] && die 1 "aucun fichier de configuration disponible"
