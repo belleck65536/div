@@ -22,7 +22,7 @@ crt_sn=$( slct $(
 	# obtenir une liste des certificats signés dans le dossier de la CA
 	for crt in $( ls -1d "$dir_ca/$ca"/*.pem ) ; do
 		sn=$( basename "${crt%.pem}" )
-		ligne=$( grep -i -e "[RVE]$tab[0-9]{12}Z$tab.*$tab[0-9A-Fa-f]+$tab.*$tab[^$tab]*" "$dir_ca/$ca/db/$ca.db" )
+		ligne=$( grep -i -E "[RVE]$tab[0-9]{12}Z$tab[^$tab]*$tab$sn$tab[^$tab]*$tab[^$tab]*" "$dir_ca/$ca/db/$ca.db" )
 		st=$(  echo "$ligne" | cut -f1 )
 		exp=$( echo "$ligne" | cut -f2 )
 		# ne  les cert marqués révoqué/expirés dans la db de la CA
