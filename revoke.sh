@@ -1,4 +1,4 @@
-#!/bin/sh
+!/bin/sh
 cd "$(dirname "$0")"
 if [ -f "./lib.sh" ] ; then
 	. "./lib.sh"
@@ -27,9 +27,8 @@ crt_sn=$( slct $(
 		ex=$( echo "$ligne" | cut -f2 )
 		exp=$( date -d "20${ex:0:2}-${ex:2:2}-${ex:4:2} ${ex:6:2}:${ex:8:2}:${ex:10:2}" +%s )
 		# ne  les cert marqués révoqué/expirés dans la db de la CA
-		[ "$st" = "V" ] && echo "$sn"
+		[ "$st" = "V" -a "$exp" -ge "$NOW" ] 2>/dev/null && echo "$sn"
 		# ne remonter que les cert encore valides dans la db de la CA
-		[ $exp -ge $NOW ] && echo "$sn"
 	done
 ))
 [ -z "$crt_sn" ] && exit
