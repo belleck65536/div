@@ -22,46 +22,34 @@ NOM=slct $(
 	done
 )
 
-if [ -z "$NOM" ] ; then
-	echo "aucun certificat sélectionné"
-	exit 1
-fi
+[ -z "$NOM" ] && die 1 "aucun certificat sélectionné"
+
 
 # calcul des noms des différents éléments de la future CA
-NOM=${cert%.crt}
-
-d_ca=ca/
-d_cadb=ca/$NOM-ca/db/
-d_pkey=ca/$NOM-ca/private/
-f_cert=
-f_pkey=
-f_bundle=
-f_crl=
-f_cfg=
-f_db=ca/$NOM-ca/db/$NOM-ca.db
-f_attr=ca/$NOM-ca/db/$NOM-ca.db.attr
-f_srl_crt=
-f_srl_crl=
+NOM="$( basename "${cert%.crt}" )"
 
 
 # création de la structure de la nouvelle CA
-mkdir -p "$d_cadb"
-mkdir -p -m 700 "$d_pkey"
+mkdir -p "$dir_ca/$NOM/db"
+mkdir -p -m 700 "$dir_ca/$NOM/private"
 
 
 # déplacer les fichier de l'identifier à promouvoir
-mv "certs/$NOM.key" "$d_pkey"
-mv "certs/$NOM.*" "$d_ca"
+mv "$dir_key/$NOM.key" "$dir_ca/$NOM/private"
+mv "$dir_crt/$NOM.crt" "$dir_ca/$NOM"
 
 
 # créer les éléments d'une CA
-cp /dev/null "$f_db"
-cp /dev/null "$f_attr"
-echo 01 > "$f_srl_crt"
-echo 01 > "$f_srl_crl"
+cp /dev/null "ca/$NOM-ca/db/$NOM-ca.db"
+cp /dev/null "ca/$NOM-ca/db/$NOM-ca.db.attr"
+echo 01 > "$dir_ca/$NOM/db/root-ca.crt.srl"
+echo 01 > "$dir_ca/$NOM/db/root-ca.crl.srl"
 
 
 # générer la chaine
+# RFC-5246 7.4.2
+# 1) le cert final, 2) la CA qui a signé [1], 3) la racine qui a signé [2]
+#
 # oulala
 # trouver la CA qui a signé le cert qu'on veut promouvoir
 # ajouter le crt dans le bundle
