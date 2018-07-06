@@ -9,7 +9,7 @@ fi
 
 
 # lister les crt dont :
-NOM=slct $(
+NOM=$( slct $(
 	for cert in $(ls -1d "$dir_crt"/*.crt) ; do
 		clef="$dir_key/$( basename "${cert%.crt}.key" )"
 		i=0
@@ -17,10 +17,10 @@ NOM=slct $(
 		let i+=$( can_sign "$cert" )
 		let i+=$( is_valid "$cert" )
 		# pas déjà été promu signataire
-		[ ! -d "$dir_ca/${cert%.crt}" ] && let i++
+		[ ! -d "$dir_ca/$( basename "${cert%.crt}" )" ] && let i++
 		[ $i -eq 4 ] && echo "$cert"
 	done
-)
+))
 
 [ -z "$NOM" ] && die 1 "aucun certificat sélectionné"
 
