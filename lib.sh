@@ -1,5 +1,5 @@
 #!/bin/sh
-
+cd "$(dirname "$0")"
 dir_ca=ca
 dir_cfg=etc
 dir_key=req
@@ -11,11 +11,18 @@ ext_req=_ext
 ext_ca=_ext
 ext_crl=_ext
 
+
+for fld in "$dir_ca" "$dir_cfg" "$dir_key" "$dir_req" "$dir_crt" "$dir_crl" "$"dir_log ; do
+	[ ! -d "$fld" ] && mkdir "$fld"
+done
+
+
 EC="Courbe elliptique"
 RSA="Paire RSA"
 tab=$( printf "\t" )
 
 let NOW=$( date +%s )+86400*1
+
 
 function slct () {
 	local i r c
