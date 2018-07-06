@@ -12,7 +12,7 @@ ext_ca=_ext
 ext_crl=_ext
 
 
-for fld in "$dir_ca" "$dir_cfg" "$dir_key" "$dir_req" "$dir_crt" "$dir_crl" "$"dir_log ; do
+for fld in "$dir_ca" "$dir_cfg" "$dir_key" "$dir_req" "$dir_crt" "$dir_crl" "$dir_log" ; do
 	[ ! -d "$fld" ] && mkdir "$fld"
 done
 
