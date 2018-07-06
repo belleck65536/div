@@ -25,7 +25,7 @@ crt_sn=$( slct $(
 		ligne=$( grep -i -E "[RVE]$tab[0-9]{12}Z$tab[^$tab]*$tab$sn$tab[^$tab]*$tab[^$tab]*" "$dir_ca/$ca/db/$ca.db" )
 		st=$(  echo "$ligne" | cut -f1 )
 		ex=$( echo "$ligne" | cut -f2 )
-		exp=$( date -d "20${ex:}-${ex:}-${ex:} ${ex:}:${ex:}:${ex:}" +%s )
+		exp=$( date -d "20${ex:0:2}-${ex:2:2}-${ex:4:2} ${ex:6:2}:${ex:8:2}:${ex:10:2}" +%s )
 		# ne  les cert marqués révoqué/expirés dans la db de la CA
 		[ "$st" = "V" ] && echo "$sn"
 		# ne remonter que les cert encore valides dans la db de la CA
