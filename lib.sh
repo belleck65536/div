@@ -68,7 +68,7 @@ function can_sign () {
 		[ $( openssl x509 -in "$1" -noout -text | grep -ic "$a" ) -ge 1 ] && let sign++
 	done
 
-	[ $sign -eq 3 ] && echo 0 || echo 1
+	[ $sign -eq 3 ] && echo 1 || echo 0
 }
 
 function openssl_time2epoch () {
