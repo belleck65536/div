@@ -42,4 +42,4 @@ crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
 [ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die 5 "anomalie sur extension \"$exten\" dans la configuration \"$cfg_file\""
 
 
-openssl ca -config "$cfg_file" -in "$req_file" -out "$crt_file" -extensions "$exten" -notext
+openssl ca -config "$cfg_file" -extensions "$exten" -in "$req_file" -out "$crt_file" -notext
