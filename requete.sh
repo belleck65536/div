@@ -10,7 +10,12 @@ fi
 
 while [ -z "$nom" ]; do
 	read -p "Nom de fichier pour la requête (l'extension sera ajoutée automatiquement) : " nom
-	if [ -f "$dir_req/$nom.csr" -o -f "$dir_key/$nom.key" -o -d "$dir_ca/$nom" ]; then
+	e=0
+	[ -f "$dir_key/$nom.key" ] && let e++
+	[ -f "$dir_req/$nom.csr" ] && let e++
+	[ -f "$dir_crt/$nom.crt" ] && let e++
+	[ -d "$dir_ca/$nom" ] && let e++
+	if [ $e -ge 1 ] ; then
 		echo "nom de requête déjà utilisé"
 		nom=""
 	fi;
@@ -31,9 +36,9 @@ case "$CLEF" in
 esac
 
 
-# en fait, la requête ne devrait contenir que l'extension SAN
-# le reste sera ajouté à la signature de la requête
-# au final, c'est avec ou sans SAN l'important
+# la CA signataire ajoute les extensions
+# l'important c'est avec ou sans SAN
+# pour une selfsign, les extensions doivent être fournies
 echo "Modèle de requête :"
 CFG_FILE=$( slct $( ls -1d "$dir_cfg"/*.conf ) )
 [ -z "$CFG_FILE" ] && die 1 "aucun fichier de configuration disponible"
@@ -45,8 +50,7 @@ EXT=$( slct $( seek_ext "$ext_req" "$CFG_FILE" ) )
 
 
 # ajout d'subjectAltName suivant l'extension demandée
-# si mention "san" absente, alors on demande le SAN (logique="without san")
-if [ $(echo "$EXT" | grep -ic "san") -eq 0 ] ; then
+if [ $(echo "$EXT" | grep -ic "no_san") -eq 0 ] ; then
 	printf "%s\n" "Définition du SAN suivant la forme <type>:<valeur>,<type>:<valeur>,..."
 	printf "Eléments :\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n" DNS IP URI email RID dirName otherName
 	printf "%s\n" "ex : DNS:www.example.com,IP:0.0.0.0"
@@ -66,5 +70,8 @@ esac
 
 
 openssl $KEYARGS >> "$dir_key/$nom.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" $AS "$EXT" -out "$dir_req/$nom.$fe" -key "$dir_key/$nom.key"
-# ./signat.sh -i "$dir_req/$nom.csr"
+SAN=$SANC openssl req -new -config "$CFG_FILE" $AS "$EXT" -key "$dir_key/$nom.key" -out "$dir_req/$nom.$fe"
+
+
+read -p "Lancer signature ? [y/N]" R
+[ "${R::1}" = "y" ] && ./signat.sh -i "$dir_req/$nom.csr"
