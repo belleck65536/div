@@ -42,8 +42,8 @@ raison=$( slct unspecified keyCompromise CACompromise affiliationChanged superse
 openssl x509 -in "$dir_ca/$ca/$crt_sn.pem" -noout -issuer -serial -subject -nameopt RFC2253
 
 
-read -p "Sûr ? [y/n] "
-if [ "${REPLY::1}" = "y" ]; then
+read -p "Sûr ? [y/n] " R
+if [ "${R::1}" = "y" ]; then
 	openssl ca -config "$dir_cfg/$ca.conf" -revoke "$dir_ca/$ca/$crt_sn.pem" -crl_reason $raison
 #	/mnt/sda1/pki/updatecrl.sh
 fi
