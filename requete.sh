@@ -15,7 +15,7 @@ while [ -z "$nom" ]; do
 	[ -f "$dir_req/$nom.csr" ] && let e++
 	[ -f "$dir_crt/$nom.crt" ] && let e++
 	[ -d "$dir_ca/$nom" ] && let e++
-	if [ $e -ge 1 ] ; then
+	if [ $e -gt 0 ] ; then
 		echo "nom de requête déjà utilisé"
 		nom=""
 	fi;
@@ -39,6 +39,7 @@ esac
 # la CA signataire ajoute les extensions
 # l'important c'est avec ou sans SAN
 # pour une selfsign, les extensions doivent être fournies
+# on ne fera de l'auto sign que pour une rootCA
 echo "Modèle de requête :"
 CFG_FILE=$( slct $( ls -1d "$dir_cfg"/*.conf ) )
 [ -z "$CFG_FILE" ] && die 1 "aucun fichier de configuration disponible"
@@ -64,14 +65,23 @@ fi
 
 read -p "autosignature de la requête ? (ex : certificat racine / test) [y|N] : " ASask
 case "$ASask" in
-	y|Y|o|O) AS="-x509 -extensions" ; fe=crt ;;
-	n|N|*) AS="-reqexts" ; fe=csr ;;
+	y|Y|o|O) AS=1 ; fe=crt ;;
+	n|N|*) AS=0 ; fe=csr ;;
 esac
 
+[ "$AS" = "1" ] && reqarg="-x509 -extensions" || reqarg="-reqexts"
+[ "$AS" = "1" ] && fe="$dir_crt/$nom.crt" || fe="$dir_req/$nom.csr"
 
 openssl $KEYARGS >> "$dir_key/$nom.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" $AS "$EXT" -key "$dir_key/$nom.key" -out "$dir_req/$nom.$fe"
+SAN=$SANC openssl req -new -config "$CFG_FILE" $reqarg "$EXT" -key "$dir_key/$nom.key" -out "$fe"
 
-
-read -p "Lancer signature ? [y/N]" R
-[ "${R::1}" = "y" ] && ./signat.sh -i "$dir_req/$nom.csr"
+case "$AS" in
+	0)
+		read -p "Lancer signature ? [y/N]" R
+		[ "${R::1}" = "y" ] && ./signat.sh -i "$fe"
+	;;
+	1)
+		read -p "Promotion en CA de la demande autosignée ? [y/N]" R
+		[ "${R::1}" = "y" ] && ./make-ca.sh -i "$fe"
+	;;
+esac
