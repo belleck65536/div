@@ -82,6 +82,7 @@ case "$AS" in
 	;;
 	1)
 		read -p "Promotion en CA de la demande autosignée ? [y/N]" R
+		cp "$fe" "${fe%.crt}-chain.pem"
 		[ "${R::1}" = "y" ] && ./make-ca.sh -i "$fe"
 	;;
 esac
