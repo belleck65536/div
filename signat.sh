@@ -46,3 +46,5 @@ crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
 
 
 SAN=_ openssl ca -config "$cfg_file" -extensions "$exten" -in "$req_file" -out "$crt_file" -notext
+cat "$crt_file" "$dir_ca/$base-chain.pem" > "${crt_file%.crt}-chain.pem"
+
