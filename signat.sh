@@ -40,6 +40,7 @@ crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
 base="${cfg_file%.conf}"
 [ ! -d "$base" ] && die 5 "anomalie lors de l'accès au dossier de la CA demandée"
 
+# vérifier la validité temporelle de la CA associée à la conf (intégrer au slct du dessus ?)
 
 # validation e - si pas d'arg, select extension "*$ext_ca"
 [ -z "$exten" ] && exten="$( slct $( seek_ext "$ext_ca" "$cfg_file" ) )"
