@@ -47,6 +47,7 @@ stateOrProvinceName     = optional
 localityName            = optional
 organizationName        = optional
 organizationalUnitName  = optional
+emailAddress            = optional
 
 [ pol_any ]
 domainComponent         = optional
