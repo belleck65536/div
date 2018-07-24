@@ -14,6 +14,7 @@ while [ -z "$nom" ]; do
 	[ -f "$dir_key/$nom.key" ] && let e++
 	[ -f "$dir_req/$nom.csr" ] && let e++
 	[ -f "$dir_crt/$nom.crt" ] && let e++
+	[ -f "$dir_crt/$nom-chain.pem" ] && let e++
 	[ -d "$dir_ca/$nom" ] && let e++
 	if [ $e -gt 0 ] ; then
 		echo "nom de requête déjà utilisé"
