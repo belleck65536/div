@@ -23,10 +23,10 @@ done
 	for cert in $(ls -1d "$dir_crt"/*.crt) ; do
 		i=0
 		# pas déjà été promu signataire
-		[ ! -d "$dir_ca/$( basename "${cert%.crt}" )" ] && let i++
-		let i+=$( can_sign "$cert" )
-		let i+=$( is_valid "$cert" )
-		[ $i -eq 3 ] && echo "$cert"
+		[ -d "$dir_ca/$( basename "${cert%.crt}" )" ] && let i++
+		[ "$( can_sign "$cert" )" != "1" ] && let i++
+		[ "$( is_valid "$cert" )" != "1" ] && let i++
+		[ $i -eq 0 ] && echo "$cert"
 	done
 ))
 [ -z "$crt_file" ] && die 4 "aucun certificat sélectionné"
@@ -36,13 +36,13 @@ done
 base="$( basename "${crt_file%.crt}" )"
 key_file="$dir_key/$base.key"
 
-[ ! -f mv "$dir_key/$base.key" ] && die 5 "clef inaccessible"
-[ ! -f mv "$dir_crt/$base.crt" ] && die 6 "certificat inaccessible"
+[ ! -f "$dir_key/$base.key" ] && die 5 "clef inaccessible"
+[ ! -f "$dir_crt/$base.crt" ] && die 6 "certificat inaccessible"
 [ ! -f "$dir_crt/$base-chain.pem" ] && die 7 "chaine inaccessible"
 
 
 # vérifier la clef
-[ "$( match "$crt_file" "$key_file" )" != "1" ] && die 5 "Clef privée introuvable/inaccessible/mal nommée"
+[ "$( match "$crt_file" "$key_file" )" != "1" ] && die 8 "Clef privée introuvable/inaccessible/mal nommée"
 
 
 # création de la structure de la nouvelle CA
@@ -70,12 +70,8 @@ echo 01 >    "$dir_ca/$base/db/$base.crt.srl"
 echo 01 >    "$dir_ca/$base/db/$base.crl.srl"
 
 
-# générer la chaine
-# RFC-5246 7.4.2
+# générer la chaine (RFC-5246 7.4.2)
 # 1) le cert final, 2) la CA qui a signé [1], 3) la racine qui a signé [2]
-#
-#cat "$dir_ca/$base.crt" "$dir_ca/nc-root-ca.crt" > "$dir_ca/$base-chain.pem"
-# la chaine sera générée à la [auto]signature du cert
 
 
 # générer une configuration
