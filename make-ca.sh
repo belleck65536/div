@@ -70,15 +70,9 @@ echo 01 >    "$dir_ca/$base/db/$base.crt.srl"
 echo 01 >    "$dir_ca/$base/db/$base.crl.srl"
 
 
-# générer la chaine (RFC-5246 7.4.2)
-# 1) le cert final, 2) la CA qui a signé [1], 3) la racine qui a signé [2]
-
-
-# générer une configuration
-# fonction ?
-# demander des paramètres ?
+# générer une configuration : demander des paramètres
+#./conf_gen.sh "$dir_ca/$base.conf"
 
 
 # générer une crl
-#crl.sh force "$dir_cfg/$base.conf"
-#openssl ca -gencrl -config "$dir_cfg/$base.conf" -out "$dir_crl/$base.crl"
+#./crl.sh force "$dir_ca/$base.conf"
