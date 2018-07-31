@@ -113,3 +113,9 @@ function curve_list ()  {
 function is_valid () {
 	echo 1
 }
+
+function conf_gen () {
+	echo "$1"
+	# dupliquer un fichier en modifier des modèles de données ?
+	# demander des paramètres et tout verser à la fin ?
+}
