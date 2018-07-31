@@ -10,7 +10,7 @@ fi
 
 echo "Sélection de l'autorité régissant le certificat à révoquer : "
 ca=$(slct $(
-	for authority in $( ls -1d "$dir_ca"/* 2>/dev/null ) ; do
+	for authority in $( ls -1d "$dir_ca/*" 2>/dev/null ) ; do
 		[ -d "$authority" ] && echo "$(basename "$authority")"
 	done
 ))
@@ -20,7 +20,7 @@ ca=$(slct $(
 echo "Numéro de série du certificat ? "
 crt_sn=$( slct $(
 	# obtenir une liste des certificats signés dans le dossier de la CA
-	for crt in $( ls -1d "$dir_ca/$ca"/*.pem ) ; do
+	for crt in $( ls -1d "$dir_ca/$ca/*.pem" ) ; do
 		sn=$( basename "${crt%.pem}" )
 		li=$( grep -i -E "[RVE]$tab[0-9]{12}Z$tab[^$tab]*$tab$sn$tab[^$tab]*$tab[^$tab]*" "$dir_ca/$ca/db/$ca.db" )
 		st=$( echo "$li" | cut -f1 )
@@ -42,8 +42,8 @@ raison=$( slct unspecified keyCompromise CACompromise affiliationChanged superse
 openssl x509 -in "$dir_ca/$ca/$crt_sn.pem" -noout -issuer -serial -subject -nameopt RFC2253
 
 
-read -p "Sûr ? [y/n] " R
+read -p "Sûr ? [y/N] " R
 if [ "${R::1}" = "y" ]; then
-	openssl ca -config "$dir_cfg/$ca.conf" -revoke "$dir_ca/$ca/$crt_sn.pem" -crl_reason $raison
-#	/mnt/sda1/pki/updatecrl.sh
+	openssl ca -config "$dir_ca/$ca.conf" -revoke "$dir_ca/$ca/$crt_sn.pem" -crl_reason $raison
+#	./crl.sh force "$dir_ca/$ca.conf"
 fi
