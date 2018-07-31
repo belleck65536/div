@@ -20,8 +20,8 @@ Dans le dossier de la pki, on aura :
 				./<CA>/ dossier des cert signés, nommées par leur S/N (copie du cert final)
 				./<CA>/private/<CA>.key --> pkey de la CA
 				./<CA>/db/ dossier de la DB
-	./etc	--> fichiers de configuration pour les requêtes, les sig et les OCSP
-				les CRL sont issues des CA
+				./<CA>.conf fichiers de configuration pour les sig, les CRL et les OCSP
+	./etc	--> fichiers de configuration pour les requêtes
 	./req	--> réception des requêtes de signature
 	
 Les emplacements configurables dans lib.sh sont :
