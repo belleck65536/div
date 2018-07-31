@@ -10,18 +10,18 @@ fi
 
 while getopts ":c:e:i:" opt; do
 	case $opt in
-		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || die 2 "erreur sur fichier de configuration \"$OPTARG\"" ;;
-		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || die 2 "erreur sur fichier de requête \"$OPTARG\"" ;;
-		e) exten="$OPTARG" ;;
-		\?) die 1 "Invalid option: -$OPTARG" ;;
-		:)  die 1 "Option -$OPTARG requires an argument." ;;
+		c) [ -f "$optarg" ] && cfg_file="$optarg" || die 2 "erreur sur fichier de configuration \"$optarg\"" ;;
+		i) [ -f "$optarg" ] && req_file="$optarg" || die 2 "erreur sur fichier de requête \"$optarg\"" ;;
+		e) exten="$optarg" ;;
+		\?) die 1 "Invalid option: -$optarg" ;;
+		:)  die 1 "Option -$optarg requires an argument." ;;
 	esac
 done
 
 
 # validation i - si pas d'arg, select CSR
 [ -z "$req_file" ] && req_file=$( slct $(
-	for csr in $( ls -1d "$dir_req"/*.csr 2>/dev/null ) ; do
+	for csr in $( ls -1d "$dir_req/*.csr" 2>/dev/null ) ; do
 		e=0
 		[ -f "$dir_crt/$( basename "${csr%.csr}.crt" )" ] && let e++
 		[ -d "$dir_ca/$( basename "${csr%.csr}" )" ] && let i++
@@ -35,7 +35,7 @@ crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
 
 
 # validation c - si pas d'arg, select conf
-[ -z "$cfg_file" ] && cfg_file=$( slct $( ls -1d "$dir_ca"/*.conf 2>/dev/null ) )
+[ -z "$cfg_file" ] && cfg_file=$( slct $( ls -1d "$dir_ca/*.conf" 2>/dev/null ) )
 [ -z "$cfg_file" ] && die 4 "aucune configuration disponible pour signer la requête"
 base="${cfg_file%.conf}"
 [ ! -d "$base" ] && die 5 "anomalie lors de l'accès au dossier de la CA demandée"
