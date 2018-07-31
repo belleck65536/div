@@ -23,15 +23,15 @@ while [ -z "$nom" ]; do
 done
 
 
-echo "Type de clef ?" ; CLEF=$( slct "$EC" "$RSA" )
-case "$CLEF" in 
+echo "Type de clef ?" ; clef=$( slct "$EC" "$RSA" )
+case "$clef" in 
 	"$EC")
-		echo "Type de courbe :" ; KEYARGS=$( slct $(curve_list) )
-		[ -n "$KEYARGS" ] && KEYARGS="ecparam -genkey -noout -name $KEYARGS" || exit
+		echo "Type de courbe :" ; keyargs=$( slct $(curve_list) )
+		[ -n "$keyargs" ] && keyargs="ecparam -genkey -noout -name $keyargs" || exit
 	;;
 	"$RSA")
-		echo "Longueur de clef :" ; KEYARGS=$( slct 2048 4096 8192 )
-		[ -n "$KEYARGS" ] && KEYARGS="genrsa $KEYARGS" || exit
+		echo "Longueur de clef :" ; keyargs=$( slct 2048 4096 8192 )
+		[ -n "$keyargs" ] && keyargs="genrsa $keyargs" || exit
 	;;
 	*) exit ;;
 esac
@@ -42,50 +42,55 @@ esac
 # pour une selfsign, les extensions doivent être fournies
 # on ne fera de l'auto sign que pour une rootCA
 echo "Modèle de requête :"
-CFG_FILE=$( slct $( ls -1d "$dir_cfg"/*.conf ) )
-[ -z "$CFG_FILE" ] && die 1 "aucun fichier de configuration disponible"
+cfg_file=$( slct $( ls -1d "$dir_cfg/*.conf" ) )
+[ -z "$cfg_file" ] && die 1 "aucun fichier de configuration disponible"
 
 
 # recherche des extensions disponibles
-EXT=$( slct $( seek_ext "$ext_req" "$CFG_FILE" ) )
-[ -z "$EXT" ] && die 2 "aucune extension trouvée dans ce fichier de configuration"
+ext=$( slct $( seek_ext "$ext_req" "$cfg_file" ) )
+[ -z "$ext" ] && die 2 "aucune extension trouvée dans ce fichier de configuration"
 
 
 # ajout d'subjectAltName suivant l'extension demandée
-if [ $(echo "$EXT" | grep -ic "no_san") -eq 0 ] ; then
+if [ $(echo "$ext" | grep -ic "no_san") -eq 0 ] ; then
 	printf "%s\n" "Définition du SAN suivant la forme <type>:<valeur>,<type>:<valeur>,..."
 	printf "Eléments :\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n\t%s\n" DNS IP URI email RID dirName otherName
 	printf "%s\n" "ex : DNS:www.example.com,IP:0.0.0.0"
-	while [ -z "$SANC" ]; do
-		read SANC
+	while [ -z "$sanc" ]; do
+		read sanc
 	done
 else
-	SANC="_"
+	sanc="_"
 fi
 
 
-read -p "autosignature de la requête ? (ex : certificat racine / test) [y|N] : " ASask
+read -p "autosignature de la requête ? (ex : certificat racine / test) [y/N] : " ASask
 case "$ASask" in
-	y|Y|o|O) AS=1 ; fe=crt ;;
-	n|N|*) AS=0 ; fe=csr ;;
+	y|Y|o|O) AS=1 ;;
+	*) AS=0 ;;
 esac
+if [ "$AS" = "1" ] ; then
+	reqarg="-x509 -extensions"
+	crt_file="$dir_crt/$nom.crt"
+else
+	reqarg="-reqexts"
+	crt_file="$dir_req/$nom.csr"
+fi
 
-[ "$AS" = "1" ] && reqarg="-x509 -extensions" || reqarg="-reqexts"
-[ "$AS" = "1" ] && fe="$dir_crt/$nom.crt" || fe="$dir_req/$nom.csr"
 
-openssl $KEYARGS >> "$dir_key/$nom.key"
-SAN=$SANC openssl req -new -config "$CFG_FILE" $reqarg "$EXT" -key "$dir_key/$nom.key" -out "$fe"
+openssl $keyargs >> "$dir_key/$nom.key"
+SAN=$sanc openssl req -new -config "$cfg_file" $reqarg "$ext" -key "$dir_key/$nom.key" -out "$crt_file"
 
 case "$AS" in
 	0)
 		read -p "Lancer signature ? [y/N]" R
-		[ "${R::1}" = "y" ] && ./signat.sh -i "$fe"
+		[ "${R::1}" = "y" ] && ./signat.sh -i "$crt_file"
 	;;
 	1)
 		read -p "Promotion en CA de la demande autosignée ? [y/N]" R
 		if [ "${R::1}" = "y" ] ;then
-			cp "$fe" "${fe%.crt}-chain.pem"
-			./make-ca.sh -i "$fe"
+			cp -a "$crt_file" "${crt_file%.crt}-chain.pem"
+			./make-ca.sh -i "$crt_file"
 		fi
 	;;
 esac
