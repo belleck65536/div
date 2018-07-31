@@ -11,14 +11,14 @@ fi
 case "$1" in
 	force)
 		cfg_file="$2"
-		crl_file="$dir_crl/$( basename "${cfg_file%.conf}.crl" )"
-		openssl ca -gencrl -config "$cfg_file" -out "$crl_file" 2>/dev/null
+		crl_file="$( basename "${cfg_file%.conf}.crl" )"
+		openssl ca -gencrl -config "$cfg_file" -out "$dir_crl/$crl_file" 2>/dev/null
 	;;
 	update)
 		[ "$2" = "-f" ] && force_update=1 || force_update=0	
-		for crl_file in $(ls -1d "$dir_crl"/*); do
+		for crl_file in $(ls -1d "$dir_crl/*"); do
 			if [ "$force_update" = "1" ] ; then
-				echo "$( date ) - mise à jour forcée" >>$dir_log/updt.log
+				echo "$( date ) - mise à jour forcée" >>"$dir_log/updt.log"
 				# si mise à jour forcée, on modifie l'expiration de la CRL à la nuit des temps
 				CRL_END=0
 			else
@@ -29,9 +29,9 @@ case "$1" in
 
 			# si la CRL est dépassée, on renouvelle
 			if [ $NOW -ge $CRL_END ]; then
-				echo "$( date ) - renouvellement de $crl" >>updt.log
-				cfg_file="$dir_cfg/$( basename "${crl_file%.crl}.conf" )"
-				openssl ca -gencrl -config "$cfg_file" -out "$crl_file" 2>/dev/null
+				echo "$( date ) - renouvellement de $crl" >>"$dir_log/updt.log"
+				cfg_file="$( basename "${crl_file%.crl}.conf" )"
+				openssl ca -gencrl -config "$dir_cfg/$cfg_file" -out "$crl_file" 2>/dev/null
 			fi
 		done
 	;;
