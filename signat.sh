@@ -24,7 +24,7 @@ done
 	for csr in $( ls -1d "$dir_req/*.csr" 2>/dev/null ) ; do
 		e=0
 		[ -f "$dir_crt/$( basename "${csr%.csr}.crt" )" ] && let e++
-		[ -d "$dir_ca/$( basename "${csr%.csr}" )" ] && let i++
+		[ -d "$dir_ca/$( basename "${csr%.csr}" )" ] && let e++
 		[ $e -eq 0 ] && echo "$csr"
 	done
 ))
