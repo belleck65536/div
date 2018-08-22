@@ -119,3 +119,19 @@ function conf_gen {
 	# dupliquer un fichier en modifier des modèles de données ?
 	# demander des paramètres et tout verser à la fin ?
 }
+
+function duree {
+	unt=${1: -1}
+	qte=${1%$unt}
+
+	case $unt in
+		y|Y) mltp=365 ;;
+		m|M) mltp=30 ;;
+		w|W) mltp=7 ;;
+		d|D) mltp=1 ;;
+		*) mltp=0 ;;
+	esac
+	
+	let days=$qte*$unt
+	echo -n $days
+}
