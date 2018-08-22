@@ -77,6 +77,13 @@ case "$ASask" in
 	*) AS=0 ;;
 esac
 
+
+while [ -z "$r ] ; do
+	read -p "Temporal certificate validity (min 1 day, ie: 7d | 4w | 6m | 10y ): " c
+	r=$( duree "$c" )
+done
+
+
 openssl $keyargs >> "$key_file"
 
 if [ "$AS" = "1" ] ; then
