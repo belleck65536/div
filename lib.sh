@@ -133,6 +133,6 @@ function duree {
 		*) mltp=0 ;;
 	esac
 	
-	let days=$qte*$unt
+	let days=$qte*$mltp
 	echo -n $days
 }
