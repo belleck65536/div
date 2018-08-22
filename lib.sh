@@ -123,6 +123,7 @@ function conf_gen {
 function duree {
 	unt=${1: -1}
 	qte=${1%$unt}
+	[ -z "$qte" ] && qte=0
 
 	case $unt in
 		y|Y) mltp=365 ;;
