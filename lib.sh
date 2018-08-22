@@ -24,7 +24,7 @@ tab=$( printf "\t" )
 let NOW=$( date +%s )+86400*1
 
 
-function slct () {
+function slct {
 	local i r c
 	[ $# -lt 1 ] && return
 
@@ -45,7 +45,7 @@ function slct () {
 	printf "%s" "$r"
 }
 
-function match () {
+function match {
 	case "${1##*.}" in
 		key) as="$( openssl pkey -in "$1" -pubout -outform pem | sha1sum )" ;;
 		csr) as="$( openssl req  -in "$1" -pubkey -outform pem -noout | sha1sum )" ;;
@@ -61,7 +61,7 @@ function match () {
 	[ "$as" = "$bs" ] && echo "1" || echo "0"
 }
 
-function can_sign () {
+function can_sign {
 	local sign=0
 
 	for a in "Certificate Sign" "CRL Sign" "CA:TRUE"; do
@@ -71,7 +71,7 @@ function can_sign () {
 	[ $sign -eq 3 ] && echo 1 || echo 0
 }
 
-function openssl_time2epoch () {
+function openssl_time2epoch {
 	local M J H A
 
 	case $1 in
@@ -96,25 +96,25 @@ function openssl_time2epoch () {
 	date -d "$A-$M-$J $H" +%s
 }
 
-function die () {
+function die {
 	echo "$2"
 	exit $1
 }
 
-function seek_ext () {
+function seek_ext {
 	grep -e "\s*\[.*$1\s*\]\s*" "$2" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' '
 }
 
-function curve_list ()  {
+function curve_list {
 	# openssl ecparam -list_curves | grep -e "^\s\s.*" | sed 's/:.*//g' | sed 's/\s*//g'
 	echo secp112r1 secp521r1 secp384r1 prime256v1
 }
 
-function is_valid () {
+function is_valid {
 	echo 1
 }
 
-function conf_gen () {
+function conf_gen {
 	echo "$1"
 	# dupliquer un fichier en modifier des modèles de données ?
 	# demander des paramètres et tout verser à la fin ?

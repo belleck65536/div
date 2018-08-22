@@ -19,16 +19,15 @@ done
 
 
 # lister les crt dont :
-[ -z "$crt_file" ] && crt_file=$( slct $(
-	for cert in $(ls -1d "$dir_crt"/*.crt) ; do
+[ -z "$crt_file" ] && crt_file="$dir_crt/$( slct $(
+	for cert in $( ls -1 "$dir_crt" 2>/dev/null | egrep "\.crt$" ) ; do
 		i=0
-		# pas déjà été promu signataire
-		[ -d "$dir_ca/$( basename "${cert%.crt}" )" ] && let i++
-		[ "$( can_sign "$cert" )" != "1" ] && let i++
-		[ "$( is_valid "$cert" )" != "1" ] && let i++
+		[ -d "$dir_ca/${cert%.crt}" ] && let i++
+		[ "$( can_sign "$dir_crt/$cert" )" != "1" ] && let i++
+		[ "$( is_valid "$dir_crt/$cert" )" != "1" ] && let i++
 		[ $i -eq 0 ] && echo "$cert"
 	done
-))
+))"
 [ -z "$crt_file" ] && die 4 "aucun certificat sélectionné"
 
 
@@ -46,19 +45,16 @@ key_file="$dir_key/$base.key"
 
 
 # création de la structure de la nouvelle CA
-mkdir "$dir_ca/$base"
-mkdir "$dir_ca/$base/db"
-mkdir "$dir_ca/$base/private"
+mkdir "$dir_ca/$base" "$dir_ca/$base/db"
+mkdir "$dir_ca/$base/private" -m 700
 
 
 # déplacer les fichier de l'identifier à promouvoir (protection clef et mise en forme CA)
 mv "$dir_key/$base.key" "$dir_ca/$base/private"
-mv "$dir_crt/$base.crt" "$dir_ca/$base"
-mv "$dir_crt/$base-chain.pem" "$dir_ca/$base"
+mv "$dir_crt/$base.crt" "$dir_crt/$base-chain.pem" "$dir_ca"
 
 
 # un peu de sécu
-chmod 700 "$dir_ca/$base/private"
 chmod 400 "$dir_ca/$base/private/$base.key"
 
 
