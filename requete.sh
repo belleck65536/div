@@ -51,8 +51,12 @@ cfg_file="$dir_cfg/$( slct $( ls -1 "$dir_cfg" 2>/dev/null | egrep "\.conf$" ) )
 
 # recherche des extensions disponibles
 ext=$( slct $( seek_ext "$ext_req" "$cfg_file" ) )
-[ -z "$ext" ] && die 2 "aucune extension trouvée dans ce fichier de configuration"
+[ -z "$ext" ] && die 2 "No extension selected from $cfg_file"
 
+
+# Signature algo
+sig_alg=$( slct sha224 sha256 sha384 sha512 )
+[ -z "$sig_alg" ] && die 2 "No signature algorithm selected"
 
 # ajout subjectAltName suivant l'extension demandée
 if [ $(echo "$ext" | grep -ic "no_san") -eq 0 ] ; then
@@ -76,7 +80,7 @@ esac
 openssl $keyargs >> "$key_file"
 
 if [ "$AS" = "1" ] ; then
-	SAN=$sanc openssl req -new -config "$cfg_file" -x509 -extensions "$ext" -key "$key_file" -out "$crt_file"
+	SAN=$sanc openssl req -new -config "$cfg_file" -x509 -extensions "$ext" -key "$key_file" -out "$crt_file" -$sig_alg
 
 	read -p "Promotion en CA de la demande autosignée ? [y/N]" R
 	if [ "${R::1}" = "y" ] ;then
@@ -84,7 +88,7 @@ if [ "$AS" = "1" ] ; then
 		./make-ca.sh -i "$crt_file"
 	fi
 else
-	SAN=$sanc openssl req -new -config "$cfg_file" -reqexts "$ext" -key "$key_file" -out "$csr_file"
+	SAN=$sanc openssl req -new -config "$cfg_file" -reqexts "$ext" -key "$key_file" -out "$csr_file" -$sig_alg
 
 	read -p "Lancer signature ? [y/N]" R
 	[ "${R::1}" = "y" ] && ./signat.sh -i "$csr_file"
