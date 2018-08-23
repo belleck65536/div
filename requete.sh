@@ -44,7 +44,7 @@ esac
 # l'important c'est avec ou sans SAN
 # pour une selfsign, les extensions doivent être fournies
 # on ne fera de l'auto sign que pour une rootCA
-echo "Modèle de requête :"
+printf "\nRequest configuration file :\n"
 cfg_file="$dir_cfg/$( slct $( ls -1 "$dir_cfg" 2>/dev/null | egrep "\.conf$" ) )"
 [ ! -f "$cfg_file" ] && die 1 "No config file selected"
 
@@ -57,6 +57,7 @@ ext=$( slct $( seek_ext "$ext_req" "$cfg_file" ) )
 # Signature algo
 sig_alg=$( slct sha224 sha256 sha384 sha512 )
 [ -z "$sig_alg" ] && die 2 "No signature algorithm selected"
+
 
 # ajout subjectAltName suivant l'extension demandée
 if [ $(echo "$ext" | grep -ic "no_san") -eq 0 ] ; then
@@ -71,32 +72,29 @@ else
 fi
 
 
-read -p "selfsign request ? (ex : root certificate / test) [y/N] : " ASask
-case "$ASask" in
-	y|Y) AS=1 ;;
-	*) AS=0 ;;
-esac
-
-
-while [ -z "$r" ] ; do
-	read -p "Temporal certificate validity (min 1 day, ie: 7d | 4w | 6m | 10y ): " c
-	r=$( duree "$c" )
-done
-
+read -p "Selfsign request ? [y/N] : " ASask
 
 openssl $keyargs >> "$key_file"
 
-if [ "$AS" = "1" ] ; then
-	SAN=$sanc openssl req -new -config "$cfg_file" -x509 -extensions "$ext" -key "$key_file" -out "$crt_file" -$sig_alg
+case "$ASask" in
+	y|Y)
+		while [ -z "$r" ] ; do
+			read -p "Temporal certificate validity (min 1 day, ie: 7d | 4w | 6m | 10y ): " c
+			r=$( duree "$c" )
+		done
 
-	read -p "Promotion en CA de la demande autosignée ? [y/N]" R
-	if [ "${R::1}" = "y" ] ;then
-		cp -a "$crt_file" "${crt_file%.crt}-chain.pem"
-		./make-ca.sh -i "$crt_file"
-	fi
-else
-	SAN=$sanc openssl req -new -config "$cfg_file" -reqexts "$ext" -key "$key_file" -out "$csr_file" -$sig_alg
+		SAN=$sanc openssl req -new -config "$cfg_file" -x509 -extensions "$ext" -key "$key_file" -out "$crt_file" -$sig_alg -days $r
 
-	read -p "Lancer signature ? [y/N]" R
-	[ "${R::1}" = "y" ] && ./signat.sh -i "$csr_file"
-fi
+		read -p "Build CA db ? [y/N] " R
+		if [ "${R::1}" = "y" ] ;then
+			cp -a "$crt_file" "${crt_file%.crt}-chain.pem"
+			./make-ca.sh -i "$crt_file"
+		fi
+	;;
+	*)
+		SAN=$sanc openssl req -new -config "$cfg_file" -reqexts "$ext" -key "$key_file" -out "$csr_file" -$sig_alg
+
+		read -p "Sign ? [y/N] " R
+		[ "${R::1}" = "y" ] && ./signat.sh -i "$csr_file"
+	;;
+esac
