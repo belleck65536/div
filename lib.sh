@@ -8,7 +8,7 @@ dir_crt=req
 dir_crl=crl
 dir_log=logs
 ext_req=_ext
-ext_ca=_ext
+ext_ca=ext_ca_
 ext_crl=_ext
 
 
@@ -72,7 +72,7 @@ function can_sign {
 }
 
 function openssl_time2epoch {
-	local M J H A
+	local M z
 
 	case $1 in
 		Jan) M=01 ;;
@@ -89,20 +89,18 @@ function openssl_time2epoch {
 		Dec) M=12 ;;
 		*)   M=__ ;;
 	esac
-	[ "$2" -le 9 ] && J=0$2 || J=$2
-	H=$3
-	A=$4
+	[ "$2" -le 9 ] && z=0
 
-	date -d "$A-$M-$J $H" +%s
+	date -d "$4-$M-$z$2 $3" +%s
 }
 
 function die {
-	echo "$2"
+	echo "$2" >&2
 	exit $1
 }
 
 function seek_ext {
-	grep -e "\s*\[.*$1\s*\]\s*" "$2" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' '
+	grep -e "\s*\[.*$1.*\]\s*" "$2" | sed -r 's/\s*\[\s*//g' | sed -r 's/\s*\]\s*//g' | tr '\n' ' '
 }
 
 function curve_list {
