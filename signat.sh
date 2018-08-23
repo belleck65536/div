@@ -35,10 +35,10 @@ crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
 
 
 # validation c # vérifier la validité temporelle de la CA associée à la conf
-[ -z "$cfg_file" ] && cfg_file="$dir_ca/$( slct $(
+[ ! -f "$cfg_file" ] && cfg_file="$dir_ca/$( slct $(
 	ls -1 "$dir_ca" 2>/dev/null | egrep "\.conf$"
 ))"
-[ -z "$cfg_file" ] && die 4 "aucune configuration disponible pour signer la requête"
+[ ! -f "$cfg_file" ] && die 4 "aucune configuration disponible pour signer la requête"
 
 base="$dir_ca/$( basename "${cfg_file%.conf}" )"
 [ ! -d "$base" ] && die 5 "anomalie lors de l'accès au dossier de la CA demandée"
