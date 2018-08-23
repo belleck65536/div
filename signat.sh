@@ -10,11 +10,11 @@ fi
 
 while getopts ":c:e:i:" opt; do
 	case $opt in
-		i) [ -f "$optarg" ] && req_file="$optarg" || die 2 "erreur sur fichier de requête \"$optarg\"" ;;
-		c) [ -f "$optarg" ] && cfg_file="$optarg" || die 2 "erreur sur fichier de configuration \"$optarg\"" ;;
-		e) exten="$optarg" ;;
-		\?) die 1 "Invalid option: -$optarg" ;;
-		:)  die 1 "Option -$optarg requires an argument." ;;
+		i) [ -f "$OPTARG" ] && req_file="$OPTARG" || die 2 "erreur sur fichier de requête $OPTARG" ;;
+		c) [ -f "$OPTARG" ] && cfg_file="$OPTARG" || die 2 "erreur sur fichier de configuration $OPTARG" ;;
+		e) exten="$OPTARG" ;;
+		\?) die 1 "Invalid option: -$OPTARG" ;;
+		:)  die 1 "Option -$OPTARG requires an argument." ;;
 	esac
 done
 
@@ -31,7 +31,7 @@ done
 [ -z "$req_file" ] && die 3 "aucune requête disponible pour être signée"
 
 crt_file="$dir_crt/$( basename "${req_file%.csr}.crt" )"
-[ -f "$crt_file" ] && die 3 "Nom de certificat signé déjà utilisé \"$crt_file\""
+[ -f "$crt_file" ] && die 3 "Nom de certificat signé déjà utilisé $crt_file"
 
 
 # validation c # vérifier la validité temporelle de la CA associée à la conf
@@ -47,7 +47,7 @@ base="$dir_ca/$( basename "${cfg_file%.conf}" )"
 # validation e
 [ -z "$exten" ] && exten="$( slct $( seek_ext "$ext_ca" "$cfg_file" ) )"
 [ -z "$exten" ] && die 6 "aucune extension disponible pour signer la requête"
-[ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die 5 "anomalie sur extension \"$exten\" dans la configuration \"$cfg_file\""
+[ $( grep -c -e "\s*\[\s*$exten\s*\]\s*" "$cfg_file" ) -ne 1 ] && die 5 "anomalie sur extension $exten dans la configuration $cfg_file"
 
 
 
