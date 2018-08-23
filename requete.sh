@@ -46,7 +46,7 @@ esac
 # on ne fera de l'auto sign que pour une rootCA
 echo "Modèle de requête :"
 cfg_file="$dir_cfg/$( slct $( ls -1 "$dir_cfg" 2>/dev/null | egrep "\.conf$" ) )"
-[ -z "$cfg_file" ] && die 1 "aucun fichier de configuration disponible"
+[ ! -f "$cfg_file" ] && die 1 "No config file selected"
 
 
 # recherche des extensions disponibles
@@ -78,7 +78,7 @@ case "$ASask" in
 esac
 
 
-while [ -z "$r ] ; do
+while [ -z "$r" ] ; do
 	read -p "Temporal certificate validity (min 1 day, ie: 7d | 4w | 6m | 10y ): " c
 	r=$( duree "$c" )
 done
