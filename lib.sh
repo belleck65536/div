@@ -1,5 +1,6 @@
 #!/bin/sh
 cd "$(dirname "$0")"
+
 dir_ca=ca
 dir_cfg=etc
 dir_key=req
@@ -104,8 +105,23 @@ function seek_ext {
 }
 
 function curve_list {
+	# full list
 	# openssl ecparam -list_curves | grep -e "^\s\s.*" | sed 's/:.*//g' | sed 's/\s*//g'
-	echo secp112r1 secp521r1 secp384r1 prime256v1
+	
+	# W10+ compat
+	# echo secp*[sauf 112b/128b] prime* brainpoolP*
+
+	# W7+ compat
+	echo secp521r1 secp384r1 prime256v1
+}
+
+function rsa_length_list {
+	# 1024
+	echo 2048 3072 4096 6144 8192 12288 16384
+}
+
+function hash_alg_list {
+	echo sha224 sha256 sha384 sha512
 }
 
 function is_valid {
