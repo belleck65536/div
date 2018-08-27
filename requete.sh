@@ -22,22 +22,29 @@ while [ -z "$nom" ]; do
 	fi;
 done
 
+
 key_file="$dir_key/$nom.key"
 csr_file="$dir_req/$nom.csr"
 crt_file="$dir_crt/$nom.crt"
 
-echo "Type de clef ?" ; clef=$( slct "$EC" "$RSA" )
-case "$clef" in 
+
+echo "Type de clef ?"
+case "$( slct "$EC" "$RSA" )" in 
 	"$EC")
 		echo "Type de courbe :" ; keyargs=$( slct $(curve_list) )
 		[ -n "$keyargs" ] && keyargs="ecparam -genkey -noout -name $keyargs" || exit
 	;;
 	"$RSA")
-		echo "Longueur de clef :" ; keyargs=$( slct 2048 4096 8192 )
+		echo "Longueur de clef :" ; keyargs=$( slct $(rsa_length_list) )
 		[ -n "$keyargs" ] && keyargs="genrsa $keyargs" || exit
 	;;
 	*) exit ;;
 esac
+
+
+# Signature algo
+sig_alg=$( slct $(hash_alg_list) )
+[ -z "$sig_alg" ] && die 2 "No signature algorithm selected"
 
 
 # la CA signataire ajoute les extensions
@@ -52,11 +59,6 @@ cfg_file="$dir_cfg/$( slct $( ls -1 "$dir_cfg" 2>/dev/null | egrep "\.conf$" ) )
 # recherche des extensions disponibles
 ext=$( slct $( seek_ext "$ext_req" "$cfg_file" ) )
 [ -z "$ext" ] && die 2 "No extension selected from $cfg_file"
-
-
-# Signature algo
-sig_alg=$( slct sha224 sha256 sha384 sha512 )
-[ -z "$sig_alg" ] && die 2 "No signature algorithm selected"
 
 
 # ajout subjectAltName suivant l'extension demandée
@@ -76,25 +78,22 @@ read -p "Selfsign request ? [y/N] : " ASask
 
 openssl $keyargs >> "$key_file"
 
-case "$ASask" in
-	y|Y)
-		while [ -z "$r" ] ; do
-			read -p "Temporal certificate validity (min 1 day, ie: 7d | 4w | 6m | 10y ): " c
-			r=$( duree "$c" )
-		done
+if [ "$ASask" == "y" -o "$ASask" == "Y" ] ; then
+	while [ -z "$r" ] ; do
+		read -p "Temporal certificate validity (min 1 day, ie: 7d | 4w | 6m | 10y ): " c
+		r=$( duree "$c" )
+	done
 
-		SAN=$sanc openssl req -new -config "$cfg_file" -x509 -extensions "$ext" -key "$key_file" -out "$crt_file" -$sig_alg -days $r
+	SAN=$sanc openssl req -new -config "$cfg_file" -x509 -extensions "$ext" -key "$key_file" -out "$crt_file" -$sig_alg -days $r
 
-		read -p "Build CA db ? [y/N] " R
-		if [ "${R::1}" = "y" ] ;then
-			cp -a "$crt_file" "${crt_file%.crt}-chain.pem"
-			./make-ca.sh -i "$crt_file"
-		fi
-	;;
-	*)
-		SAN=$sanc openssl req -new -config "$cfg_file" -reqexts "$ext" -key "$key_file" -out "$csr_file" -$sig_alg
+	read -p "Build CA db ? [y/N] " R
+	if [ "${R::1}" == "y" ] ;then
+		cp -a "$crt_file" "${crt_file%.crt}-chain.pem"
+		./make-ca.sh -i "$crt_file"
+	fi
+else
+	SAN=$sanc openssl req -new -config "$cfg_file" -reqexts "$ext" -key "$key_file" -out "$csr_file" -$sig_alg
 
-		read -p "Sign ? [y/N] " R
-		[ "${R::1}" = "y" ] && ./signat.sh -i "$csr_file"
-	;;
-esac
+	read -p "Sign ? [y/N] " R
+	[ "${R::1}" = "y" ] && ./signat.sh -i "$csr_file"
+fi
